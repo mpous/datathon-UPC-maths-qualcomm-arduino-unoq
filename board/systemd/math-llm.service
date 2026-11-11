@@ -1,0 +1,13 @@
+[Unit]
+Description=Math on the Edge: small language model (llama.cpp, port @LLM_PORT@)
+After=local-fs.target
+
+[Service]
+Type=simple
+User=@USER@
+ExecStart=@LLAMA_SERVER@ -m @LLM_PATH@ --host 127.0.0.1 --port @LLM_PORT@ --threads @LLM_THREADS@ --ctx-size @LLM_CTX@ --parallel 1 --cache-ram 0 --ctx-checkpoints 2 --jinja --reasoning off --reasoning-budget 0 --alias @LLM_ALIAS@
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

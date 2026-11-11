@@ -1,0 +1,18 @@
+# Data from M3Kang is for research use only: never commit it
+data/*
+!data/sample_problems.jsonl
+!data/README.md
+
+# Results and freeze artifacts are created on each board
+results/*
+!results/.gitkeep
+freeze/*.tar.gz
+freeze/manifest.txt
+
+# Models live in ~/models, but just in case
+*.gguf
+*.db
+
+__pycache__/
+.venv/
+.DS_Store

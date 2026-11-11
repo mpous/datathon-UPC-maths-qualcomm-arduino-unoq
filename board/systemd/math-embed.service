@@ -1,0 +1,13 @@
+[Unit]
+Description=Math on the Edge: embedding model (llama.cpp, port @EMBED_PORT@)
+After=local-fs.target
+
+[Service]
+Type=simple
+User=@USER@
+ExecStart=@LLAMA_SERVER@ -m @EMBED_PATH@ --embedding --host 127.0.0.1 --port @EMBED_PORT@ --threads @EMBED_THREADS@ --ctx-size @EMBED_CTX@ --parallel 1 --cache-ram 0 --batch-size @EMBED_CTX@ --ubatch-size @EMBED_CTX@
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

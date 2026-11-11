@@ -1,0 +1,4 @@
+# Laptop only: data preparation. The board needs nothing from pip.
+huggingface_hub>=0.24
+pyarrow>=15
+rapidocr_onnxruntime>=1.3

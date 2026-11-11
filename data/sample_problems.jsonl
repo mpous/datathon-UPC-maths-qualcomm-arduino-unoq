@@ -1,0 +1,5 @@
+{"id": "sample-1", "language": "eng", "level": 0, "text": "Anna has 3 bags with 4 apples in each bag. She eats 2 apples. How many apples does she have left?", "options": {"A": "8", "B": "9", "C": "10", "D": "12", "E": "14"}, "label": "C"}
+{"id": "sample-2", "language": "eng", "level": 2, "text": "What is the value of 2 + 3 × 4?", "options": {"A": "20", "B": "14", "C": "24", "D": "9", "E": "10"}, "label": "B"}
+{"id": "sample-3", "language": "eng", "level": 4, "text": "A square has a perimeter of 36 cm. What is its area?", "options": {"A": "36 cm²", "B": "72 cm²", "C": "81 cm²", "D": "144 cm²", "E": "324 cm²"}, "label": "C"}
+{"id": "sample-4", "language": "cat", "level": 1, "text": "En Pau té 15 cromos i en dóna 6 a la seva germana. Quants cromos li queden?", "options": {"A": "6", "B": "8", "C": "9", "D": "11", "E": "21"}, "label": "C"}
+{"id": "sample-5", "language": "cat", "level": 5, "text": "Quants nombres de dues xifres tenen la suma de les xifres igual a 5?", "options": {"A": "4", "B": "5", "C": "6", "D": "9", "E": "10"}, "label": "B"}
