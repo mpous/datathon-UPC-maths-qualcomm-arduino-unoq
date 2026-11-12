@@ -44,7 +44,7 @@ By the end, you'll have:
 
 Steps 1 to 8 are the minimum every team must have working on the board. Each command is shown in full, with what it does and what you should see.
 
-Commands that start with `laptop$` run on your laptop, and commands that start with `board$` run on the UNO Q. Don't type the prompt.
+Every code block holds only what you type: copy it and paste it into the terminal. Commands run on the board, unless the text says **On your laptop**. When there's output to check, it's in a separate block after **You should see**.
 
 ---
 
@@ -66,15 +66,17 @@ Write the password down. You'll need it for SSH and for `sudo`.
 In App Lab, the board's details show its IP address. Or, from the board's terminal in App Lab, run:
 
 ```bash
-board$ hostname -I
+hostname -I
 ```
 
 The first address, such as `192.168.1.131`, is the one you want.
 
 ### 0.3 Connect over SSH
 
+On your laptop:
+
 ```bash
-laptop$ ssh arduino@192.168.1.131
+ssh arduino@192.168.1.131
 ```
 
 Type `yes` the first time, then your password. You should see a prompt like `arduino@UNOQ-4GB:~$`.
@@ -82,29 +84,40 @@ Type `yes` the first time, then your password. You should see a prompt like `ard
 **If you see `Connection refused`**, the board's SSH host keys may be empty. This happened on one of our test boards. Open a shell over USB instead (see 0.4), then recreate the keys:
 
 ```bash
-board$ sudo rm -f /etc/ssh/ssh_host_*
-board$ sudo ssh-keygen -A
-board$ sudo systemctl reset-failed ssh
-board$ sudo systemctl restart ssh
+sudo rm -f /etc/ssh/ssh_host_*
+sudo ssh-keygen -A
+sudo systemctl reset-failed ssh
+sudo systemctl restart ssh
 ```
 
-Then remove the old key from your laptop, and connect again:
+Then, on your laptop, remove the old key and connect again:
 
 ```bash
-laptop$ ssh-keygen -R 192.168.1.131
-laptop$ ssh arduino@192.168.1.131
+ssh-keygen -R 192.168.1.131
+ssh arduino@192.168.1.131
 ```
 
 ### 0.4 Connect over USB with adb (fallback)
 
 The board also accepts `adb`, the Android Debug Bridge, over the USB-C cable. App Lab uses it, and you'll need it in step 13, when Wi-Fi is off. Install it with [Android SDK Platform-Tools](https://developer.android.com/tools/releases/platform-tools), or `brew install --cask android-platform-tools` on macOS.
 
+On your laptop, list the boards connected over USB:
+
 ```bash
-laptop$ adb devices
+adb devices
+```
+
+You should see your board's serial number:
+
+```text
 List of devices attached
 2663959418      device
+```
 
-laptop$ adb shell
+Then open a shell on the board:
+
+```bash
+adb shell
 ```
 
 `adb shell` logs you in as `arduino`. If more than one board is connected, pick one with `adb -s <serial> shell`.
@@ -114,7 +127,7 @@ laptop$ adb shell
 Always shut down from the terminal before you unplug the board. Pulling the power can corrupt the files on it.
 
 ```bash
-board$ sudo poweroff
+sudo poweroff
 ```
 
 ---
@@ -126,12 +139,19 @@ Before you install anything, check that the board has what the next steps need. 
 ### 1.1 Memory and disk
 
 ```bash
-board$ free -h
+free -h
+```
+
+You should see:
+
+```text
                total        used        free      shared  buff/cache   available
 Mem:           3.6Gi       480Mi       2.8Gi        38Mi       505Mi       3.1Gi
 Swap:          1.8Gi          0B       1.8Gi
+```
 
-board$ df -h ~
+```bash
+df -h ~
 ```
 
 You need about 3.6 GB of memory in `total`. In the `df` output, you need at least 2 GB in `Avail`. llama.cpp takes about 350 MB once it's built, the models take 870 MB, and the packages take a few hundred MB more.
@@ -139,7 +159,12 @@ You need about 3.6 GB of memory in `total`. In the `df` output, you need at leas
 ### 1.2 The clock
 
 ```bash
-board$ timedatectl | grep synchronized
+timedatectl | grep synchronized
+```
+
+You should see:
+
+```text
 System clock synchronized: yes
 ```
 
@@ -148,7 +173,12 @@ If it says `no`, the board has no internet yet, and `apt` and HTTPS downloads wi
 ### 1.3 Internet access
 
 ```bash
-board$ curl -sI https://huggingface.co | head -1
+curl -sI https://huggingface.co | head -1
+```
+
+You should see:
+
+```text
 HTTP/2 200
 ```
 
@@ -161,7 +191,7 @@ You need internet for steps 2 to 4. After that, everything runs offline.
 ### 2.1 Update the package list
 
 ```bash
-board$ sudo apt-get update
+sudo apt-get update
 ```
 
 `sudo` asks for the password you set in App Lab.
@@ -169,7 +199,7 @@ board$ sudo apt-get update
 ### 2.2 Install the packages
 
 ```bash
-board$ sudo apt-get install -y build-essential cmake git pkg-config libssl-dev curl wget ca-certificates python3 sqlite3 jq
+sudo apt-get install -y build-essential cmake git pkg-config libssl-dev curl wget ca-certificates python3 sqlite3 jq
 ```
 
 | Package | Why you need it |
@@ -185,20 +215,25 @@ board$ sudo apt-get install -y build-essential cmake git pkg-config libssl-dev c
 **If `apt` says a package "is not installable"** (we saw `cmake` failing on `librhash1`, and `libc6-dev` on `rpcsvc-proto`), the package list was downloaded incompletely. Delete it, download it again, and repeat 2.2:
 
 ```bash
-board$ sudo rm -rf /var/lib/apt/lists/*
-board$ sudo apt-get clean
-board$ sudo apt-get update
-board$ sudo apt-get install -y build-essential cmake git pkg-config libssl-dev curl wget ca-certificates python3 sqlite3 jq
+sudo rm -rf /var/lib/apt/lists/*
+sudo apt-get clean
+sudo apt-get update
+sudo apt-get install -y build-essential cmake git pkg-config libssl-dev curl wget ca-certificates python3 sqlite3 jq
 ```
 
 ### 2.3 Check
 
 ```bash
-board$ gcc --version | head -1
+gcc --version | head -1
+cmake --version | head -1
+python3 --version
+```
+
+You should see:
+
+```text
 gcc (Debian 14.2.0-19) 14.2.0
-board$ cmake --version | head -1
 cmake version 3.31.6
-board$ python3 --version
 Python 3.13.5
 ```
 
@@ -215,25 +250,30 @@ Your version numbers may be slightly different. What matters is that each comman
 Every team uses the same llama.cpp commit, `2cbe0ec`, so results compare fairly. These commands download only that commit (about 40 MB), not the project's whole history:
 
 ```bash
-board$ mkdir -p ~/llama.cpp
-board$ cd ~/llama.cpp
-board$ git init
-board$ git remote add origin https://github.com/ggml-org/llama.cpp.git
-board$ git fetch --depth 1 origin 2cbe0ec429b849a88664e0f62388fc92a5abd699
-board$ git checkout FETCH_HEAD
+mkdir -p ~/llama.cpp
+cd ~/llama.cpp
+git init
+git remote add origin https://github.com/ggml-org/llama.cpp.git
+git fetch --depth 1 origin 2cbe0ec429b849a88664e0f62388fc92a5abd699
+git checkout FETCH_HEAD
 ```
 
 **Check:**
 
 ```bash
-board$ git log -1 --format=%h
+git log -1 --format=%h
+```
+
+You should see:
+
+```text
 2cbe0ec
 ```
 
 ### 3.2 Configure the build
 
 ```bash
-board$ cmake -B build -DGGML_NATIVE=ON -DCMAKE_BUILD_TYPE=Release
+cmake -B build -DGGML_NATIVE=ON -DCMAKE_BUILD_TYPE=Release
 ```
 
 - `-B build` puts the build files in `~/llama.cpp/build`.
@@ -243,7 +283,7 @@ board$ cmake -B build -DGGML_NATIVE=ON -DCMAKE_BUILD_TYPE=Release
 ### 3.3 Compile
 
 ```bash
-board$ cmake --build build --config Release -j4 --target llama-server llama-cli
+cmake --build build --config Release -j4 --target llama-server llama-cli
 ```
 
 - `-j4` uses all four cores.
@@ -256,7 +296,12 @@ This took about 30 minutes on our board. Leave it running.
 ### 3.4 Check
 
 ```bash
-board$ ~/llama.cpp/build/bin/llama-server --version
+~/llama.cpp/build/bin/llama-server --version
+```
+
+You should see:
+
+```text
 version: 0.9.0-dev (build 1, commit 2cbe0ec)
 built with GNU 14.2.0 for Linux aarch64
 ```
@@ -279,10 +324,10 @@ GGUF is llama.cpp's model file format. Q8_0 means each weight is stored in about
 Each URL is pinned to a fixed revision of the model repository, so everyone gets exactly the same file:
 
 ```bash
-board$ mkdir -p ~/models
-board$ cd ~/models
-board$ wget --continue https://huggingface.co/bartowski/Qwen_Qwen3.5-0.8B-GGUF/resolve/f36b1ea49a332ede8fe5f389bbf5b3575ef71f48/Qwen_Qwen3.5-0.8B-Q8_0.gguf
-board$ wget --continue https://huggingface.co/CompendiumLabs/bge-small-en-v1.5-gguf/resolve/d32f8c040ea3b516330eeb75b72bcc2d3a780ab7/bge-small-en-v1.5-q8_0.gguf
+mkdir -p ~/models
+cd ~/models
+wget --continue https://huggingface.co/bartowski/Qwen_Qwen3.5-0.8B-GGUF/resolve/f36b1ea49a332ede8fe5f389bbf5b3575ef71f48/Qwen_Qwen3.5-0.8B-Q8_0.gguf
+wget --continue https://huggingface.co/CompendiumLabs/bge-small-en-v1.5-gguf/resolve/d32f8c040ea3b516330eeb75b72bcc2d3a780ab7/bge-small-en-v1.5-q8_0.gguf
 ```
 
 If a download breaks, run the same command again. `--continue` resumes it.
@@ -292,10 +337,15 @@ If a download breaks, run the same command again. `--continue` resumes it.
 A SHA256 hash is a fingerprint of a file. If one byte is different, the hash is completely different. Check both files:
 
 ```bash
-board$ sha256sum --check <<'EOF'
+sha256sum --check <<'EOF'
 7182e2362766bb9569209bbc24cf1a4cdfbb8ab161babdb2080c84fa62c08c2f  Qwen_Qwen3.5-0.8B-Q8_0.gguf
 ec38e8da142596baa913124ae50550de284b6916bf59577ef2f0cb9660c2f514  bge-small-en-v1.5-q8_0.gguf
 EOF
+```
+
+You should see:
+
+```text
 Qwen_Qwen3.5-0.8B-Q8_0.gguf: OK
 bge-small-en-v1.5-q8_0.gguf: OK
 ```
@@ -311,7 +361,7 @@ Now run the language model by hand, and talk to it. You'll need two terminals on
 ### 5.1 Start the server (terminal 1)
 
 ```bash
-board$ ~/llama.cpp/build/bin/llama-server \
+~/llama.cpp/build/bin/llama-server \
   -m ~/models/Qwen_Qwen3.5-0.8B-Q8_0.gguf \
   --host 127.0.0.1 --port 8081 \
   --threads 4 --ctx-size 4096 \
@@ -348,13 +398,18 @@ If you see `couldn't bind HTTP server socket` instead, another `llama-server` al
 On your laptop, open a new terminal window and connect again:
 
 ```bash
-laptop$ ssh arduino@192.168.1.131
+ssh arduino@192.168.1.131
 ```
 
 ### 5.3 Is it alive?
 
 ```bash
-board$ curl http://127.0.0.1:8081/health
+curl http://127.0.0.1:8081/health
+```
+
+You should see:
+
+```text
 {"status":"ok"}
 ```
 
@@ -363,13 +418,18 @@ board$ curl http://127.0.0.1:8081/health
 The server speaks the same chat API as OpenAI, so any OpenAI client works with it. Send it a question:
 
 ```bash
-board$ curl -s http://127.0.0.1:8081/v1/chat/completions \
+curl -s http://127.0.0.1:8081/v1/chat/completions \
   -H "Content-Type: application/json" \
   -d '{
         "messages": [{"role": "user", "content": "Hello! What is 7 times 8? Answer in one sentence."}],
         "temperature": 0,
         "max_tokens": 40
       }' | jq -r '.choices[0].message.content'
+```
+
+You should see:
+
+```text
 7 times 8 equals 56.
 ```
 
@@ -380,10 +440,15 @@ It took about 4 seconds on our board. `"temperature": 0` makes the answer the sa
 Run the same request, but print the timings instead of the answer:
 
 ```bash
-board$ curl -s http://127.0.0.1:8081/v1/chat/completions \
+curl -s http://127.0.0.1:8081/v1/chat/completions \
   -H "Content-Type: application/json" \
   -d '{"messages": [{"role": "user", "content": "Hello! What is 7 times 8? Answer in one sentence."}], "temperature": 0, "max_tokens": 40}' \
   | jq '.timings | {prompt_n, prompt_per_second, predicted_n, predicted_per_second}'
+```
+
+You should see:
+
+```text
 {
   "prompt_n": 27,
   "prompt_per_second": 11.277385250516671,
@@ -402,7 +467,7 @@ These two numbers shape every idea you'll try in the datathon.
 In the datathon, the answer must be one letter. A grammar forces the model to write only what the grammar allows: here, one character from A to E.
 
 ```bash
-board$ curl -s http://127.0.0.1:8081/v1/chat/completions \
+curl -s http://127.0.0.1:8081/v1/chat/completions \
   -H "Content-Type: application/json" \
   -d '{
         "messages": [{"role": "user", "content": "What is 2 + 3 x 4?\nA) 20\nB) 14\nC) 24\nD) 9\nE) 10\nReply with the letter of the correct option."}],
@@ -410,6 +475,11 @@ board$ curl -s http://127.0.0.1:8081/v1/chat/completions \
         "temperature": 0,
         "max_tokens": 1
       }' | jq -r '.choices[0].message.content'
+```
+
+You should see:
+
+```text
 C
 ```
 
@@ -426,7 +496,7 @@ The embedding model turns a text into a list of 384 numbers (a vector). Texts wi
 In terminal 1, stop the language model with Ctrl+C if you like (or open a third terminal), and run:
 
 ```bash
-board$ ~/llama.cpp/build/bin/llama-server \
+~/llama.cpp/build/bin/llama-server \
   -m ~/models/bge-small-en-v1.5-q8_0.gguf \
   --embedding \
   --host 127.0.0.1 --port 8082 \
@@ -443,13 +513,25 @@ board$ ~/llama.cpp/build/bin/llama-server \
 In terminal 2:
 
 ```bash
-board$ curl http://127.0.0.1:8082/health
-{"status":"ok"}
+curl http://127.0.0.1:8082/health
+```
 
-board$ curl -s http://127.0.0.1:8082/v1/embeddings \
+You should see:
+
+```text
+{"status":"ok"}
+```
+
+```bash
+curl -s http://127.0.0.1:8082/v1/embeddings \
   -H "Content-Type: application/json" \
   -d '{"input": "How many apples are left?"}' \
   | jq -c '.data[0].embedding | length, .[0:4]'
+```
+
+You should see:
+
+```text
 384
 [-0.017603538930416107,-0.06429719924926758,-0.014960619620978832,-0.09050412476062775]
 ```
@@ -461,7 +543,7 @@ The first line is the length: 384 numbers, so it works. The second line shows th
 Press Ctrl+C in each terminal that runs a server, or run:
 
 ```bash
-board$ pkill llama-server
+pkill llama-server
 ```
 
 In the next step, systemd runs them for you.
@@ -477,7 +559,7 @@ Running the servers by hand is good for experiments. For the datathon, they shou
 This command writes the service file. Copy and paste it as a whole:
 
 ```bash
-board$ sudo tee /etc/systemd/system/math-llm.service > /dev/null <<'EOF'
+sudo tee /etc/systemd/system/math-llm.service > /dev/null <<'EOF'
 [Unit]
 Description=Math on the Edge: small language model (llama.cpp, port 8081)
 After=local-fs.target
@@ -499,7 +581,7 @@ The `ExecStart` line is the same command as in step 5.1, with full paths: system
 ### 7.2 Create the service for the embedding model
 
 ```bash
-board$ sudo tee /etc/systemd/system/math-embed.service > /dev/null <<'EOF'
+sudo tee /etc/systemd/system/math-embed.service > /dev/null <<'EOF'
 [Unit]
 Description=Math on the Edge: embedding model (llama.cpp, port 8082)
 After=local-fs.target
@@ -519,8 +601,8 @@ EOF
 ### 7.3 Start them
 
 ```bash
-board$ sudo systemctl daemon-reload
-board$ sudo systemctl enable --now math-llm math-embed
+sudo systemctl daemon-reload
+sudo systemctl enable --now math-llm math-embed
 ```
 
 - `daemon-reload` makes systemd read the new files.
@@ -531,15 +613,13 @@ board$ sudo systemctl enable --now math-llm math-embed
 Wait about 10 seconds for the models to load, then:
 
 ```bash
-board$ systemctl is-active math-llm math-embed
-active
-active
-board$ curl http://127.0.0.1:8081/health
-{"status":"ok"}
-board$ curl http://127.0.0.1:8082/health
-{"status":"ok"}
-board$ free -h
+systemctl is-active math-llm math-embed
+curl http://127.0.0.1:8081/health; echo
+curl http://127.0.0.1:8082/health; echo
+free -h
 ```
+
+You should see `active` twice, then `{"status":"ok"}` twice, then the memory table.
 
 The two servers use about 1.1 GB of RAM together, and leave about 2.5 GB free.
 
@@ -548,10 +628,10 @@ Run the hello world from step 5.4 again: it should answer the same way.
 Commands you'll use often:
 
 ```bash
-board$ systemctl status math-llm               # is it running?
-board$ journalctl -u math-llm -f               # follow its log (Ctrl+C to stop)
-board$ sudo systemctl restart math-llm         # restart it, for example after changing the model
-board$ sudo systemctl stop math-llm math-embed # free the RAM for an experiment
+systemctl status math-llm               # is it running?
+journalctl -u math-llm -f               # follow its log (Ctrl+C to stop)
+sudo systemctl restart math-llm         # restart it, for example after changing the model
+sudo systemctl stop math-llm math-embed # free the RAM for an experiment
 ```
 
 To try other server options, stop the service first (`sudo systemctl stop math-llm`), because only one program can use port 8081.
@@ -563,9 +643,9 @@ To try other server options, stop the service first (`sudo systemctl stop math-l
 ### 8.1 Clone this repository on the board
 
 ```bash
-board$ cd ~
-board$ git clone https://github.com/mpous/datathon-maths-arduino-unoq.git
-board$ cd datathon-maths-arduino-unoq
+cd ~
+git clone https://github.com/mpous/datathon-maths-arduino-unoq.git
+cd datathon-maths-arduino-unoq
 ```
 
 Every later command on the board runs from this folder, `~/datathon-maths-arduino-unoq`. If your team forks the repository, clone your fork instead, and commit your changes there.
@@ -577,9 +657,9 @@ The code uses only Python's standard library. There's no `pip` on the board, and
 `data/sample_problems.jsonl` holds five made-up problems in the M3Kang format. Answer them with `predict.py`, the program the jury runs:
 
 ```bash
-board$ mkdir -p results
-board$ python3 predict.py --input data/sample_problems.jsonl --output results/smoke.csv
-board$ cat results/smoke.csv
+mkdir -p results
+python3 predict.py --input data/sample_problems.jsonl --output results/smoke.csv
+cat results/smoke.csv
 ```
 
 **Check:** `results/smoke.csv` has one row per problem, each `answer` is one letter from A to E, each `status` is `ok`, and each `seconds` value is well under 60.
@@ -599,20 +679,24 @@ The test checks that the pipeline runs, not that it's right. Don't be surprised 
 
 ### 9.1 Install the requirements
 
+On your laptop:
+
 ```bash
-laptop$ git clone https://github.com/mpous/datathon-maths-arduino-unoq.git
-laptop$ cd datathon-maths-arduino-unoq
-laptop$ python3 -m venv .venv
-laptop$ source .venv/bin/activate
-laptop$ pip install -r laptop/requirements.txt
+git clone https://github.com/mpous/datathon-maths-arduino-unoq.git
+cd datathon-maths-arduino-unoq
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r laptop/requirements.txt
 ```
 
 On Windows, activate the environment with `.venv\Scripts\activate`.
 
 ### 9.2 Run it
 
+On your laptop:
+
 ```bash
-laptop$ python3 laptop/prepare_m3kang.py --languages eng,cat
+python3 laptop/prepare_m3kang.py --languages eng,cat
 ```
 
 It downloads the first `high_quality` file of the dataset (393 MB, once), keeps English and Catalan, reads the options from each image, and splits the problems into training and validation sets. It takes about 15 minutes per language. If you stop it, run it again: it caches the OCR results in `data/.ocr_cache.jsonl`.
@@ -671,20 +755,24 @@ One problem per line in `data/train.jsonl` and `data/val.jsonl`:
 
 From the repository folder on your laptop:
 
+On your laptop:
+
 ```bash
-laptop$ scp data/train.jsonl data/val.jsonl arduino@192.168.1.131:~/datathon-maths-arduino-unoq/data/
+scp data/train.jsonl data/val.jsonl arduino@192.168.1.131:~/datathon-maths-arduino-unoq/data/
 ```
 
 Or over USB:
 
+On your laptop:
+
 ```bash
-laptop$ adb push data/train.jsonl data/val.jsonl /home/arduino/datathon-maths-arduino-unoq/data/
+adb push data/train.jsonl data/val.jsonl /home/arduino/datathon-maths-arduino-unoq/data/
 ```
 
 **Check:**
 
 ```bash
-board$ wc -l data/train.jsonl data/val.jsonl
+wc -l data/train.jsonl data/val.jsonl
 ```
 
 ---
@@ -696,7 +784,7 @@ board$ wc -l data/train.jsonl data/val.jsonl
 `predict.py` is the entry point the jury runs:
 
 ```bash
-board$ python3 predict.py --input data/val.jsonl --output results/predictions.csv
+python3 predict.py --input data/val.jsonl --output results/predictions.csv
 ```
 
 For each problem, `copilot/pipeline.py`:
@@ -718,7 +806,7 @@ The output is a CSV file with one row per problem: `id`, `language`, `answer`, `
 ### 11.2 Run the evaluation
 
 ```bash
-board$ python3 eval.py --limit 50 --name baseline
+python3 eval.py --limit 50 --name baseline
 ```
 
 It answers 50 validation problems, chosen the same way each time, and compares them with the labels. It prints:
@@ -754,7 +842,7 @@ Retrieval-augmented generation (RAG) finds solved problems that look like the ne
 ### 12.1 Build the index
 
 ```bash
-board$ python3 build_index.py --input data/train.jsonl --db data/index.db --only-with-options
+python3 build_index.py --input data/train.jsonl --db data/index.db --only-with-options
 ```
 
 It embeds every training problem with bge-small and stores the vectors in a SQLite file, `data/index.db`. `--only-with-options` skips problems whose options OCR couldn't read. `--languages eng` keeps one language.
@@ -762,8 +850,8 @@ It embeds every training problem with bge-small and stores the vectors in a SQLi
 ### 12.2 Use it
 
 ```bash
-board$ python3 eval.py --limit 50 --rag 1 --name rag1
-board$ python3 predict.py --input data/val.jsonl --output results/predictions.csv --rag 1
+python3 eval.py --limit 50 --rag 1 --name rag1
+python3 predict.py --input data/val.jsonl --output results/predictions.csv --rag 1
 ```
 
 `--rag 1` adds the most similar training problem, with its answer, before the question. `--rag 2` adds two. `eval.py` never retrieves the problem it's answering (`exclude_id`), so the score stays honest.
@@ -776,18 +864,25 @@ Every example makes the prompt longer, and the board reads about 12 tokens per s
 
 At the official run, the board has no network. Test that now. Turning Wi-Fi off drops your SSH session, so connect over USB with `adb shell` (step 0.4) first.
 
+On your laptop:
+
 ```bash
-laptop$ adb shell
-board$ cd ~/datathon-maths-arduino-unoq
-board$ sudo nmcli radio wifi off
-board$ ./freeze/check_offline.sh data/val.jsonl 20
-board$ sudo nmcli radio wifi on
+adb shell
+```
+
+Then, in that shell on the board:
+
+```bash
+cd ~/datathon-maths-arduino-unoq
+sudo nmcli radio wifi off
+./freeze/check_offline.sh data/val.jsonl 20
+sudo nmcli radio wifi on
 ```
 
 Add the same options you'll submit, such as `--rag 1`, after the count:
 
 ```bash
-board$ ./freeze/check_offline.sh data/val.jsonl 20 --rag 1
+./freeze/check_offline.sh data/val.jsonl 20 --rag 1
 ```
 
 The script checks that there's no route to the internet, that both servers are up, and then runs `predict.py` twice on the same problems. It fails if:
@@ -805,7 +900,7 @@ The script checks that there's no route to the internet, that both servers are u
 Before the test set is released, freeze what you'll run:
 
 ```bash
-board$ ./freeze/make_freeze.sh my-team-name
+./freeze/make_freeze.sh my-team-name
 ```
 
 It writes `freeze/manifest.txt` (your Git commit, the llama.cpp version, the SHA256 of every model in `~/models`, and the service command lines), and packs your code, indexes, and manifest into `freeze/my-team-name-<time>.tar.gz`. It doesn't pack `train.jsonl` or `val.jsonl`.
