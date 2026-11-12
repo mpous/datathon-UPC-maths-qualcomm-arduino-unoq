@@ -35,4 +35,4 @@ print(f"  {right}/{len(rows)} correct, worst latency {worst:.1f} s")
 assert all(r["answer"] in "ABCDE" and len(r["answer"]) == 1 for r in rows), "invalid output"
 assert worst < 60, "too slow"
 PY
-ok "the minimum pipeline works. Next: prepare M3Kang on your laptop (README, step 8)"
+ok "the minimum pipeline works. Next: prepare M3Kang on your laptop (README, step 9)"

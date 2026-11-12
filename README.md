@@ -6,8 +6,9 @@ Follow the steps in order. Each one ends with a check, so you know it worked bef
 
 By the end, you'll have:
 
-- llama.cpp built on the board, at a pinned commit
+- llama.cpp built on the board by hand, at a pinned commit
 - Qwen3.5 0.8B (the language model) and bge-small-en-v1.5 (the embedding model) downloaded and verified
+- A hello world with each model, so you know what the servers do
 - Both models running as services that start when the board boots
 - `predict.py`, which answers a file of problems with one letter each, A to E
 - Your M3Kang training and validation sets, and the baseline accuracy you need to beat
@@ -26,19 +27,22 @@ By the end, you'll have:
 | Step | Where | What | Time |
 | --- | --- | --- | --- |
 | [0. Connect to the board](#step-0-connect-to-the-board) | Laptop | First setup in App Lab, then SSH | 15 min |
-| [1. Get this repository](#step-1-get-this-repository-onto-the-board) | Board | `git clone` | 1 min |
-| [2. Check the board](#step-2-check-the-board) | Board | `00_check_board.sh` | 1 min |
-| [3. Install packages](#step-3-install-the-build-tools) | Board | `01_install_packages.sh` | 5 min |
-| [4. Build llama.cpp](#step-4-build-llamacpp) | Board | `02_build_llama_cpp.sh` | 30 min |
-| [5. Download the models](#step-5-download-the-models) | Board | `03_download_models.sh` | 5 min |
-| [6. Start the servers](#step-6-start-the-model-servers) | Board | `04_install_services.sh` | 2 min |
-| [7. Smoke test](#step-7-run-the-smoke-test) | Board | `05_smoke_test.sh` | 1 min |
-| [8. Prepare M3Kang](#step-8-prepare-m3kang-on-your-laptop) | Laptop | `prepare_m3kang.py` | 30 min |
-| [9. Copy the data](#step-9-copy-the-data-to-the-board) | Laptop | `scp` | 1 min |
-| [10. Measure the baseline](#step-10-measure-the-baseline) | Board | `eval.py` | 10 min |
-| [11. Try retrieval](#step-11-try-retrieval-rag) | Board | `build_index.py`, `--rag` | 15 min |
-| [12. Test offline](#step-12-test-offline-like-the-jury) | Board, over USB | `check_offline.sh` | 5 min |
-| [13. Freeze](#step-13-freeze-your-submission) | Board | `make_freeze.sh` | 2 min |
+| [1. Check the board](#step-1-check-the-board) | Board | Memory, disk, clock, internet | 2 min |
+| [2. Install the build tools](#step-2-install-the-build-tools) | Board | `sudo apt-get install` | 5 min |
+| [3. Build llama.cpp](#step-3-build-llamacpp) | Board | `git fetch`, `cmake` | 30 min |
+| [4. Download the models](#step-4-download-the-models) | Board | `wget`, `sha256sum` | 5 min |
+| [5. Hello world: language model](#step-5-hello-world-with-the-language-model) | Board | `llama-server`, `curl` | 10 min |
+| [6. Hello world: embeddings](#step-6-hello-world-with-the-embedding-model) | Board | `llama-server --embedding` | 5 min |
+| [7. Run as services](#step-7-run-both-models-as-services) | Board | `systemctl` | 5 min |
+| [8. First test](#step-8-get-the-datathon-code-and-run-the-first-test) | Board | `git clone`, `predict.py` | 5 min |
+| [9. Prepare M3Kang](#step-9-prepare-m3kang-on-your-laptop) | Laptop | `prepare_m3kang.py` | 30 min |
+| [10. Copy the data](#step-10-copy-the-data-to-the-board) | Laptop | `scp` | 1 min |
+| [11. Measure the baseline](#step-11-measure-the-baseline) | Board | `eval.py` | 10 min |
+| [12. Try retrieval](#step-12-try-retrieval-rag) | Board | `build_index.py`, `--rag` | 15 min |
+| [13. Test offline](#step-13-test-offline-like-the-jury) | Board, over USB | `check_offline.sh` | 5 min |
+| [14. Freeze](#step-14-freeze-your-submission) | Board | `make_freeze.sh` | 2 min |
+
+Steps 1 to 8 are the minimum every team must have working on the board. Each command is shown in full, with what it does and what you should see.
 
 Commands that start with `laptop$` run on your laptop, and commands that start with `board$` run on the UNO Q. Don't type the prompt.
 
@@ -93,7 +97,7 @@ laptop$ ssh arduino@192.168.1.131
 
 ### 0.4 Connect over USB with adb (fallback)
 
-The board also accepts `adb`, the Android Debug Bridge, over the USB-C cable. App Lab uses it, and you'll need it in step 12, when Wi-Fi is off. Install it with [Android SDK Platform-Tools](https://developer.android.com/tools/releases/platform-tools), or `brew install --cask android-platform-tools` on macOS.
+The board also accepts `adb`, the Android Debug Bridge, over the USB-C cable. App Lab uses it, and you'll need it in step 13, when Wi-Fi is off. Install it with [Android SDK Platform-Tools](https://developer.android.com/tools/releases/platform-tools), or `brew install --cask android-platform-tools` on macOS.
 
 ```bash
 laptop$ adb devices
@@ -115,9 +119,446 @@ board$ sudo poweroff
 
 ---
 
-## Step 1: Get this repository onto the board
+## Step 1: Check the board
 
-On the board:
+Before you install anything, check that the board has what the next steps need. These commands only read: they change nothing.
+
+### 1.1 Memory and disk
+
+```bash
+board$ free -h
+               total        used        free      shared  buff/cache   available
+Mem:           3.6Gi       480Mi       2.8Gi        38Mi       505Mi       3.1Gi
+Swap:          1.8Gi          0B       1.8Gi
+
+board$ df -h ~
+```
+
+You need about 3.6 GB of memory in `total`. In the `df` output, you need at least 2 GB in `Avail`. llama.cpp takes about 350 MB once it's built, the models take 870 MB, and the packages take a few hundred MB more.
+
+### 1.2 The clock
+
+```bash
+board$ timedatectl | grep synchronized
+System clock synchronized: yes
+```
+
+If it says `no`, the board has no internet yet, and `apt` and HTTPS downloads will fail with certificate errors. Check the Wi-Fi in App Lab.
+
+### 1.3 Internet access
+
+```bash
+board$ curl -sI https://huggingface.co | head -1
+HTTP/2 200
+```
+
+You need internet for steps 2 to 4. After that, everything runs offline.
+
+---
+
+## Step 2: Install the build tools
+
+### 2.1 Update the package list
+
+```bash
+board$ sudo apt-get update
+```
+
+`sudo` asks for the password you set in App Lab.
+
+### 2.2 Install the packages
+
+```bash
+board$ sudo apt-get install -y build-essential cmake git pkg-config libssl-dev curl wget ca-certificates python3 sqlite3 jq
+```
+
+| Package | Why you need it |
+| --- | --- |
+| `build-essential` | The C and C++ compilers (`gcc`, `g++`) and `make` |
+| `cmake` | Configures the llama.cpp build |
+| `git` | Downloads llama.cpp and this repository |
+| `pkg-config`, `libssl-dev` | Let llama.cpp download over HTTPS |
+| `curl`, `wget`, `ca-certificates` | Download files and talk to the model servers |
+| `python3`, `sqlite3` | Run the datathon code and store the retrieval index |
+| `jq` | Read the JSON answers from the servers |
+
+**If `apt` says a package "is not installable"** (we saw `cmake` failing on `librhash1`, and `libc6-dev` on `rpcsvc-proto`), the package list was downloaded incompletely. Delete it, download it again, and repeat 2.2:
+
+```bash
+board$ sudo rm -rf /var/lib/apt/lists/*
+board$ sudo apt-get clean
+board$ sudo apt-get update
+board$ sudo apt-get install -y build-essential cmake git pkg-config libssl-dev curl wget ca-certificates python3 sqlite3 jq
+```
+
+### 2.3 Check
+
+```bash
+board$ gcc --version | head -1
+gcc (Debian 14.2.0-19) 14.2.0
+board$ cmake --version | head -1
+cmake version 3.31.6
+board$ python3 --version
+Python 3.13.5
+```
+
+Your version numbers may be slightly different. What matters is that each command answers.
+
+---
+
+## Step 3: Build llama.cpp
+
+[llama.cpp](https://github.com/ggml-org/llama.cpp) runs language models on a CPU. It's the engine for both models, and it's what you'll build here.
+
+### 3.1 Download the source at the pinned commit
+
+Every team uses the same llama.cpp commit, `2cbe0ec`, so results compare fairly. These commands download only that commit (about 40 MB), not the project's whole history:
+
+```bash
+board$ mkdir -p ~/llama.cpp
+board$ cd ~/llama.cpp
+board$ git init
+board$ git remote add origin https://github.com/ggml-org/llama.cpp.git
+board$ git fetch --depth 1 origin 2cbe0ec429b849a88664e0f62388fc92a5abd699
+board$ git checkout FETCH_HEAD
+```
+
+**Check:**
+
+```bash
+board$ git log -1 --format=%h
+2cbe0ec
+```
+
+### 3.2 Configure the build
+
+```bash
+board$ cmake -B build -DGGML_NATIVE=ON -DCMAKE_BUILD_TYPE=Release
+```
+
+- `-B build` puts the build files in `~/llama.cpp/build`.
+- `-DGGML_NATIVE=ON` optimizes for this processor, including its NEON vector instructions.
+- `-DCMAKE_BUILD_TYPE=Release` turns on the compiler optimizations. Without it, the models run several times slower.
+
+### 3.3 Compile
+
+```bash
+board$ cmake --build build --config Release -j4 --target llama-server llama-cli
+```
+
+- `-j4` uses all four cores.
+- `--target llama-server llama-cli` builds only the two programs you need, not the dozens of examples and tests.
+
+This took about 30 minutes on our board. Leave it running.
+
+**If the SSH session drops during the build**, the build stops. Connect again, go back to `~/llama.cpp`, and run the same command: it continues where it stopped. To keep it running even if you disconnect, start it inside `tmux` (`sudo apt-get install -y tmux`, then `tmux`, then the build command; reattach with `tmux attach`).
+
+### 3.4 Check
+
+```bash
+board$ ~/llama.cpp/build/bin/llama-server --version
+version: 0.9.0-dev (build 1, commit 2cbe0ec)
+built with GNU 14.2.0 for Linux aarch64
+```
+
+---
+
+## Step 4: Download the models
+
+You'll download two models from Hugging Face into `~/models`:
+
+| Model | File | Size | Role |
+| --- | --- | --- | --- |
+| [Qwen3.5 0.8B](https://huggingface.co/bartowski/Qwen_Qwen3.5-0.8B-GGUF), Q8_0 | `Qwen_Qwen3.5-0.8B-Q8_0.gguf` | 835 MB | Reads the problem and picks the answer |
+| [bge-small-en-v1.5](https://huggingface.co/CompendiumLabs/bge-small-en-v1.5-gguf), Q8_0 | `bge-small-en-v1.5-q8_0.gguf` | 37 MB | Turns a text into 384 numbers, so you can find similar problems |
+
+GGUF is llama.cpp's model file format. Q8_0 means each weight is stored in about 8 bits, which keeps the quality close to the original model at a quarter of the size.
+
+### 4.1 Download
+
+Each URL is pinned to a fixed revision of the model repository, so everyone gets exactly the same file:
+
+```bash
+board$ mkdir -p ~/models
+board$ cd ~/models
+board$ wget --continue https://huggingface.co/bartowski/Qwen_Qwen3.5-0.8B-GGUF/resolve/f36b1ea49a332ede8fe5f389bbf5b3575ef71f48/Qwen_Qwen3.5-0.8B-Q8_0.gguf
+board$ wget --continue https://huggingface.co/CompendiumLabs/bge-small-en-v1.5-gguf/resolve/d32f8c040ea3b516330eeb75b72bcc2d3a780ab7/bge-small-en-v1.5-q8_0.gguf
+```
+
+If a download breaks, run the same command again. `--continue` resumes it.
+
+### 4.2 Check the files
+
+A SHA256 hash is a fingerprint of a file. If one byte is different, the hash is completely different. Check both files:
+
+```bash
+board$ sha256sum --check <<'EOF'
+7182e2362766bb9569209bbc24cf1a4cdfbb8ab161babdb2080c84fa62c08c2f  Qwen_Qwen3.5-0.8B-Q8_0.gguf
+ec38e8da142596baa913124ae50550de284b6916bf59577ef2f0cb9660c2f514  bge-small-en-v1.5-q8_0.gguf
+EOF
+Qwen_Qwen3.5-0.8B-Q8_0.gguf: OK
+bge-small-en-v1.5-q8_0.gguf: OK
+```
+
+If a file says `FAILED`, delete it with `rm`, and download it again.
+
+---
+
+## Step 5: Hello world with the language model
+
+Now run the language model by hand, and talk to it. You'll need two terminals on the board: one runs the server, and the other sends it questions.
+
+### 5.1 Start the server (terminal 1)
+
+```bash
+board$ ~/llama.cpp/build/bin/llama-server \
+  -m ~/models/Qwen_Qwen3.5-0.8B-Q8_0.gguf \
+  --host 127.0.0.1 --port 8081 \
+  --threads 4 --ctx-size 4096 \
+  --parallel 1 --cache-ram 0 --ctx-checkpoints 2 \
+  --jinja --reasoning off --reasoning-budget 0 \
+  --alias qwen3.5-0.8b
+```
+
+| Option | What it does |
+| --- | --- |
+| `-m` | The model file |
+| `--host 127.0.0.1 --port 8081` | Listen on this board only, on port 8081. Nothing is exposed to the network. |
+| `--threads 4` | Use the four CPU cores |
+| `--ctx-size 4096` | Up to 4,096 tokens per request: a problem, its options, and a few examples |
+| `--parallel 1` | One request at a time. Several slots would split the memory and the cores. |
+| `--cache-ram 0 --ctx-checkpoints 2` | **Keep memory in check.** By default, this llama.cpp version keeps up to 8 GB of prompt cache in RAM, and the board has 3.6 GB. In our tests, the default settings got `llama-server` killed for running out of memory. |
+| `--jinja` | Use the chat template stored in the model file |
+| `--reasoning off --reasoning-budget 0` | Answer directly, without a hidden thinking phase that costs time |
+| `--alias` | The model name the API reports |
+
+Wait until the log shows these lines, after about 5 seconds:
+
+```
+srv  server_run_i: model loaded
+srv  server_on_li: listening on http://127.0.0.1:8081
+```
+
+Leave this terminal open. To stop the server later, press Ctrl+C here.
+
+### 5.2 Open a second terminal (terminal 2)
+
+On your laptop, open a new terminal window and connect again:
+
+```bash
+laptop$ ssh arduino@192.168.1.131
+```
+
+### 5.3 Is it alive?
+
+```bash
+board$ curl http://127.0.0.1:8081/health
+{"status":"ok"}
+```
+
+### 5.4 Hello world
+
+The server speaks the same chat API as OpenAI, so any OpenAI client works with it. Send it a question:
+
+```bash
+board$ curl -s http://127.0.0.1:8081/v1/chat/completions \
+  -H "Content-Type: application/json" \
+  -d '{
+        "messages": [{"role": "user", "content": "Hello! What is 7 times 8? Answer in one sentence."}],
+        "temperature": 0,
+        "max_tokens": 40
+      }' | jq -r '.choices[0].message.content'
+7 times 8 equals 56.
+```
+
+It took about 4 seconds on our board. `"temperature": 0` makes the answer the same every time, which the datathon rules require.
+
+### 5.5 How fast is it?
+
+Run the same request, but print the timings instead of the answer:
+
+```bash
+board$ curl -s http://127.0.0.1:8081/v1/chat/completions \
+  -H "Content-Type: application/json" \
+  -d '{"messages": [{"role": "user", "content": "Hello! What is 7 times 8? Answer in one sentence."}], "temperature": 0, "max_tokens": 40}' \
+  | jq '.timings | {prompt_n, prompt_per_second, predicted_n, predicted_per_second}'
+{
+  "prompt_n": 27,
+  "prompt_per_second": 11.277385250516671,
+  "predicted_n": 10,
+  "predicted_per_second": 5.875521207693799
+}
+```
+
+- `prompt_per_second`: the board **reads** about 11 tokens per second. A competition problem with its options has 80 to 300 tokens, so reading it takes 7 to 25 seconds.
+- `predicted_per_second`: it **writes** about 6 tokens per second. Every word you let the model write costs time against the 60-second limit.
+
+These two numbers shape every idea you'll try in the datathon.
+
+### 5.6 One letter, A to E
+
+In the datathon, the answer must be one letter. A grammar forces the model to write only what the grammar allows: here, one character from A to E.
+
+```bash
+board$ curl -s http://127.0.0.1:8081/v1/chat/completions \
+  -H "Content-Type: application/json" \
+  -d '{
+        "messages": [{"role": "user", "content": "What is 2 + 3 x 4?\nA) 20\nB) 14\nC) 24\nD) 9\nE) 10\nReply with the letter of the correct option."}],
+        "grammar": "root ::= [A-E]",
+        "temperature": 0,
+        "max_tokens": 1
+      }' | jq -r '.choices[0].message.content'
+C
+```
+
+The format is right: one letter. The answer is wrong: 2 + 3 × 4 is 14, which is B. That's the challenge of the datathon, in one example.
+
+---
+
+## Step 6: Hello world with the embedding model
+
+The embedding model turns a text into a list of 384 numbers (a vector). Texts with similar meanings get vectors that point in similar directions. You'll use it to find solved problems that look like a new one.
+
+### 6.1 Start the server
+
+In terminal 1, stop the language model with Ctrl+C if you like (or open a third terminal), and run:
+
+```bash
+board$ ~/llama.cpp/build/bin/llama-server \
+  -m ~/models/bge-small-en-v1.5-q8_0.gguf \
+  --embedding \
+  --host 127.0.0.1 --port 8082 \
+  --threads 4 --ctx-size 512 --batch-size 512 --ubatch-size 512 \
+  --parallel 1 --cache-ram 0
+```
+
+- `--embedding` serves vectors instead of chat answers.
+- `--ctx-size 512`: bge-small was trained on texts up to 512 tokens.
+- `--batch-size 512 --ubatch-size 512`: an embedding model reads the whole text in one go, so the batch must be as large as the longest text.
+
+### 6.2 Hello world
+
+In terminal 2:
+
+```bash
+board$ curl http://127.0.0.1:8082/health
+{"status":"ok"}
+
+board$ curl -s http://127.0.0.1:8082/v1/embeddings \
+  -H "Content-Type: application/json" \
+  -d '{"input": "How many apples are left?"}' \
+  | jq -c '.data[0].embedding | length, .[0:4]'
+384
+[-0.017603538930416107,-0.06429719924926758,-0.014960619620978832,-0.09050412476062775]
+```
+
+The first line is the length: 384 numbers, so it works. The second line shows the first four. Your last digits may differ.
+
+### 6.3 Stop both servers
+
+Press Ctrl+C in each terminal that runs a server, or run:
+
+```bash
+board$ pkill llama-server
+```
+
+In the next step, systemd runs them for you.
+
+---
+
+## Step 7: Run both models as services
+
+Running the servers by hand is good for experiments. For the datathon, they should start when the board boots, and restart if they crash. systemd, the Linux service manager, does that.
+
+### 7.1 Create the service for the language model
+
+This command writes the service file. Copy and paste it as a whole:
+
+```bash
+board$ sudo tee /etc/systemd/system/math-llm.service > /dev/null <<'EOF'
+[Unit]
+Description=Math on the Edge: small language model (llama.cpp, port 8081)
+After=local-fs.target
+
+[Service]
+Type=simple
+User=arduino
+ExecStart=/home/arduino/llama.cpp/build/bin/llama-server -m /home/arduino/models/Qwen_Qwen3.5-0.8B-Q8_0.gguf --host 127.0.0.1 --port 8081 --threads 4 --ctx-size 4096 --parallel 1 --cache-ram 0 --ctx-checkpoints 2 --jinja --reasoning off --reasoning-budget 0 --alias qwen3.5-0.8b
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
+EOF
+```
+
+The `ExecStart` line is the same command as in step 5.1, with full paths: systemd doesn't know what `~` means.
+
+### 7.2 Create the service for the embedding model
+
+```bash
+board$ sudo tee /etc/systemd/system/math-embed.service > /dev/null <<'EOF'
+[Unit]
+Description=Math on the Edge: embedding model (llama.cpp, port 8082)
+After=local-fs.target
+
+[Service]
+Type=simple
+User=arduino
+ExecStart=/home/arduino/llama.cpp/build/bin/llama-server -m /home/arduino/models/bge-small-en-v1.5-q8_0.gguf --embedding --host 127.0.0.1 --port 8082 --threads 4 --ctx-size 512 --parallel 1 --cache-ram 0 --batch-size 512 --ubatch-size 512
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
+EOF
+```
+
+### 7.3 Start them
+
+```bash
+board$ sudo systemctl daemon-reload
+board$ sudo systemctl enable --now math-llm math-embed
+```
+
+- `daemon-reload` makes systemd read the new files.
+- `enable --now` starts both services now, and at every boot.
+
+### 7.4 Check
+
+Wait about 10 seconds for the models to load, then:
+
+```bash
+board$ systemctl is-active math-llm math-embed
+active
+active
+board$ curl http://127.0.0.1:8081/health
+{"status":"ok"}
+board$ curl http://127.0.0.1:8082/health
+{"status":"ok"}
+board$ free -h
+```
+
+The two servers use about 1.1 GB of RAM together, and leave about 2.5 GB free.
+
+Run the hello world from step 5.4 again: it should answer the same way.
+
+Commands you'll use often:
+
+```bash
+board$ systemctl status math-llm               # is it running?
+board$ journalctl -u math-llm -f               # follow its log (Ctrl+C to stop)
+board$ sudo systemctl restart math-llm         # restart it, for example after changing the model
+board$ sudo systemctl stop math-llm math-embed # free the RAM for an experiment
+```
+
+To try other server options, stop the service first (`sudo systemctl stop math-llm`), because only one program can use port 8081.
+
+---
+
+## Step 8: Get the datathon code and run the first test
+
+### 8.1 Clone this repository on the board
 
 ```bash
 board$ cd ~
@@ -125,155 +566,36 @@ board$ git clone https://github.com/mpous/datathon-maths-arduino-unoq.git
 board$ cd datathon-maths-arduino-unoq
 ```
 
-Every later command on the board runs from this folder, `~/datathon-maths-arduino-unoq`.
+Every later command on the board runs from this folder, `~/datathon-maths-arduino-unoq`. If your team forks the repository, clone your fork instead, and commit your changes there.
 
-If `git` isn't installed yet, run `sudo apt-get update && sudo apt-get install -y git` first.
+The code uses only Python's standard library. There's no `pip` on the board, and you don't need it.
 
-If your team forks the repository, clone your fork instead. You'll commit your own changes there.
+### 8.2 Answer the sample problems
 
----
-
-## Step 2: Check the board
+`data/sample_problems.jsonl` holds five made-up problems in the M3Kang format. Answer them with `predict.py`, the program the jury runs:
 
 ```bash
-board$ ./board/00_check_board.sh
+board$ mkdir -p results
+board$ python3 predict.py --input data/sample_problems.jsonl --output results/smoke.csv
+board$ cat results/smoke.csv
 ```
 
-This script only reads. It changes nothing. It checks:
+**Check:** `results/smoke.csv` has one row per problem, each `answer` is one letter from A to E, each `status` is `ok`, and each `seconds` value is well under 60.
 
-- RAM (at least 3,000 MB) and free disk space (at least 3 GB)
-- That the clock is synchronized, which `apt` and HTTPS downloads need
-- That the SSH host keys aren't empty
-- That `apt` can see the packages the build needs
-- That the board can reach huggingface.co
-- What's already installed: llama.cpp, the models, and the services
-
-Lines marked `OK` are fine. Fix every `FAIL` before you go on: each one prints the command that fixes it. A `WARN` is worth reading, but you can continue.
-
----
-
-## Step 3: Install the build tools
-
-```bash
-board$ ./board/01_install_packages.sh
-```
-
-It asks for your password, then installs the compiler, CMake, Git, and Python with `apt`.
-
-**If `apt` says a package "is not installable"** (we saw `librhash1` and `rpcsvc-proto`), the package list on the board was downloaded incompletely. The script detects this and repairs it by deleting the lists and downloading them again. To repair it by hand:
-
-```bash
-board$ sudo rm -rf /var/lib/apt/lists/*
-board$ sudo apt clean
-board$ sudo apt update
-```
-
-**Check:** the script ends with `OK` and `Next: ./board/02_build_llama_cpp.sh`.
-
----
-
-## Step 4: Build llama.cpp
-
-[llama.cpp](https://github.com/ggml-org/llama.cpp) runs language models on a CPU. It's the engine for both models.
-
-```bash
-board$ ./board/02_build_llama_cpp.sh
-```
-
-The script downloads llama.cpp at the commit pinned in `config.env` (`2cbe0ec`), and builds `llama-server` and `llama-cli` into `~/llama.cpp/build/bin`. Everyone uses the same commit, so results compare fairly between teams.
-
-The build uses all four cores and took about 30 minutes on our board. Leave it running. If you lose the SSH connection, run the script again: it continues where it stopped. If llama.cpp is already built at the right commit, the script skips the build.
-
-**Check:**
-
-```bash
-board$ ~/llama.cpp/build/bin/llama-server --version
-version: 0.9.0-dev (build 1, commit 2cbe0ec)
-```
-
----
-
-## Step 5: Download the models
-
-```bash
-board$ ./board/03_download_models.sh
-```
-
-It downloads two models from Hugging Face into `~/models`:
-
-| Model | File | Size | Role |
-| --- | --- | --- | --- |
-| [Qwen3.5 0.8B](https://huggingface.co/bartowski/Qwen_Qwen3.5-0.8B-GGUF), Q8_0 | `Qwen_Qwen3.5-0.8B-Q8_0.gguf` | 835 MB | Reads the problem and picks the answer |
-| [bge-small-en-v1.5](https://huggingface.co/CompendiumLabs/bge-small-en-v1.5-gguf), Q8_0 | `bge-small-en-v1.5-q8_0.gguf` | 37 MB | Turns a problem into 384 numbers, so you can find similar ones |
-
-Each download is pinned to a fixed revision and checked against its SHA256 hash. If a hash doesn't match, the script stops and deletes the file. If the download breaks, run the script again: it resumes.
-
-**Check:** the script prints `OK` with the size of both files.
-
----
-
-## Step 6: Start the model servers
-
-```bash
-board$ ./board/04_install_services.sh
-```
-
-This installs two systemd services and starts them:
-
-| Service | Port | Model |
-| --- | --- | --- |
-| `math-llm` | 8081 | Qwen3.5 0.8B, OpenAI-compatible chat API |
-| `math-embed` | 8082 | bge-small-en-v1.5, embeddings API |
-
-Both listen on `127.0.0.1` only, so nothing is exposed to the network. They start when the board boots, and restart if they crash.
-
-The script waits until both models are loaded, then prints how much RAM is left. The two servers use about 1.1 GB together.
-
-**Check:**
-
-```bash
-board$ curl http://127.0.0.1:8081/health
-{"status":"ok"}
-board$ curl http://127.0.0.1:8082/health
-{"status":"ok"}
-```
-
-Commands you'll use often:
-
-```bash
-board$ systemctl status math-llm               # is it running?
-board$ journalctl -u math-llm -f               # follow its log (Ctrl+C to stop)
-board$ sudo systemctl restart math-llm         # restart it, for example after editing config.env
-board$ sudo systemctl stop math-llm math-embed # free the RAM for something else
-```
-
-**Why services, and why these flags.** During our tests, a `llama-server` started by hand was killed by the kernel for running out of memory. By default, this llama.cpp version keeps a prompt cache of up to 8 GB in RAM, plus 32 checkpoints per slot, and the board has 3.6 GB. The services turn the cache off (`--cache-ram 0`), keep 2 checkpoints, and use a single slot (`--parallel 1`). With these flags, memory stayed flat over a 40-problem run. If you start a server by hand to experiment, use the same flags. The full command is in `board/systemd/math-llm.service`.
-
----
-
-## Step 7: Run the smoke test
-
-```bash
-board$ ./board/05_smoke_test.sh
-```
-
-It checks that both servers answer, that one embedding has 384 numbers and puts similar sentences closer together than unrelated ones, and that `predict.py` answers the five made-up problems in `data/sample_problems.jsonl` within the time limit.
-
-**Check:** the last line is `OK the minimum pipeline works`.
-
-The smoke test checks that the pipeline runs, not that it's right. Don't be surprised if the baseline gets most of the five problems wrong. That's what the next steps measure, and what your team will improve.
+The test checks that the pipeline runs, not that it's right. Don't be surprised if most of the five answers are wrong. Compare them with the `label` field in `data/sample_problems.jsonl`.
 
 **This is the minimum every team must have working.** The steps that follow give you the data and the tools to improve it.
 
+
 ---
 
-## Step 8: Prepare M3Kang on your laptop
+## Step 9: Prepare M3Kang on your laptop
 
 [M3Kang](https://huggingface.co/datasets/qualcomm/M3Kang) has 1,747 Kangaroo math competition problems, from 2007 to 2024, at 8 levels (level 0 is grade 5), translated into 108 languages. Each problem has a label: the correct letter, A to E.
 
 **There's a catch: the five options are only in the image, not in the text.** The `text` field has the question, but A to E are drawn in the picture. The preparation script reads them with OCR (optical character recognition) on your laptop, which is much faster than the board.
 
-### 8.1 Install the requirements
+### 9.1 Install the requirements
 
 ```bash
 laptop$ git clone https://github.com/mpous/datathon-maths-arduino-unoq.git
@@ -285,7 +607,7 @@ laptop$ pip install -r laptop/requirements.txt
 
 On Windows, activate the environment with `.venv\Scripts\activate`.
 
-### 8.2 Run it
+### 9.2 Run it
 
 ```bash
 laptop$ python3 laptop/prepare_m3kang.py --languages eng,cat
@@ -319,7 +641,7 @@ Options read from the image: 1078/1747 (62%)
 Most common answer in train: D (25.0%). ...
 ```
 
-### 8.3 What the OCR gets wrong
+### 9.3 What the OCR gets wrong
 
 OCR reads all five options for 62% of the problems. The rest have `"options": {}`, and the model sees only the question. The usual reasons:
 
@@ -329,7 +651,7 @@ OCR reads all five options for 62% of the problems. The rest have `"options": {}
 
 Better option reading is one of the easiest ways to improve your score. Look at the problems with empty options with `--save-images`.
 
-### 8.4 The data format
+### 9.4 The data format
 
 One problem per line in `data/train.jsonl` and `data/val.jsonl`:
 
@@ -343,7 +665,7 @@ One problem per line in `data/train.jsonl` and `data/val.jsonl`:
 
 ---
 
-## Step 9: Copy the data to the board
+## Step 10: Copy the data to the board
 
 From the repository folder on your laptop:
 
@@ -365,9 +687,9 @@ board$ wc -l data/train.jsonl data/val.jsonl
 
 ---
 
-## Step 10: Measure the baseline
+## Step 11: Measure the baseline
 
-### 10.1 How the baseline works
+### 11.1 How the baseline works
 
 `predict.py` is the entry point the jury runs:
 
@@ -391,7 +713,7 @@ The output is a CSV file with one row per problem: `id`, `language`, `answer`, `
 - No network: everything runs on the board
 - The same answers every time: temperature 0 and a fixed seed
 
-### 10.2 Run the evaluation
+### 11.2 Run the evaluation
 
 ```bash
 board$ python3 eval.py --limit 50 --name baseline
@@ -406,7 +728,7 @@ It answers 50 validation problems, chosen the same way each time, and compares t
 
 Every run is saved in `results/eval-<time>-<name>.csv`, and gets one line in `results/ablations.csv`, with the Git commit, so you can compare experiments. Use `--limit 0` for the whole validation set (about 45 minutes for 281 problems), and `--languages cat` for one language.
 
-### 10.3 What we measured
+### 11.3 What we measured
 
 On 40 English text-only problems whose options OCR read, with the default settings:
 
@@ -423,11 +745,11 @@ The time is mostly prompt reading (prefill): the board reads about 12 tokens per
 
 ---
 
-## Step 11: Try retrieval (RAG)
+## Step 12: Try retrieval (RAG)
 
 Retrieval-augmented generation (RAG) finds solved problems that look like the new one, and shows them to the model as examples.
 
-### 11.1 Build the index
+### 12.1 Build the index
 
 ```bash
 board$ python3 build_index.py --input data/train.jsonl --db data/index.db --only-with-options
@@ -435,7 +757,7 @@ board$ python3 build_index.py --input data/train.jsonl --db data/index.db --only
 
 It embeds every training problem with bge-small and stores the vectors in a SQLite file, `data/index.db`. `--only-with-options` skips problems whose options OCR couldn't read. `--languages eng` keeps one language.
 
-### 11.2 Use it
+### 12.2 Use it
 
 ```bash
 board$ python3 eval.py --limit 50 --rag 1 --name rag1
@@ -448,7 +770,7 @@ Every example makes the prompt longer, and the board reads about 12 tokens per s
 
 ---
 
-## Step 12: Test offline, like the jury
+## Step 13: Test offline, like the jury
 
 At the official run, the board has no network. Test that now. Turning Wi-Fi off drops your SSH session, so connect over USB with `adb shell` (step 0.4) first.
 
@@ -476,7 +798,7 @@ The script checks that there's no route to the internet, that both servers are u
 
 ---
 
-## Step 13: Freeze your submission
+## Step 14: Freeze your submission
 
 Before the test set is released, freeze what you'll run:
 
@@ -497,7 +819,7 @@ After you freeze, don't change the code, the models, or `config.env`.
 Change one thing at a time, and record each run with `eval.py --name`.
 
 - **Fix the letter bias.** Look at the letter counts in `eval.py`. Ask for the model's log probabilities (`"logprobs": true, "top_logprobs": 5`) and correct for a letter it picks too often.
-- **Ask for the value, not the letter**, or **let it reason** in one line before `Answer: X`. Neither helped on their own in our test (step 10.3), but they may help combined with a better prompt, examples, or a bigger model. Reasoning triples the time per problem.
+- **Ask for the value, not the letter**, or **let it reason** in one line before `Answer: X`. Neither helped on their own in our test (step 11.3), but they may help combined with a better prompt, examples, or a bigger model. Reasoning triples the time per problem.
 - **Break the problem down.** Classify the problem type first, compute with Python where you can (arithmetic, counting), and ask the model only for what it's good at.
 - **Read the options better.** Improve the OCR, or crop the bottom of the image before OCR.
 - **Use the image.** Qwen3.5 0.8B can see images with its projector file, [`mmproj-Qwen_Qwen3.5-0.8B-f16.gguf`](https://huggingface.co/bartowski/Qwen_Qwen3.5-0.8B-GGUF) (205 MB). It costs RAM and time, so measure both.
@@ -542,7 +864,7 @@ freeze/
 results/                    eval outputs and ablations.csv (not committed)
 ```
 
-The board scripts need nothing beyond Python's standard library. There's no `pip` on the board, and you don't need it.
+The scripts in `board/` run steps 1 to 8 without stopping, using the settings in `config.env`. Do the steps by hand on your first board, so you know what each one does. Use the scripts to set up more boards, or to repair one.
 
 ### Settings in config.env
 
@@ -557,7 +879,7 @@ The board scripts need nothing beyond Python's standard library. There's no `pip
 | `SEED` | 42 | Random seed |
 | `FALLBACK_ANSWER` | D | Answer when the model is too slow or fails |
 
-After you change a model or server setting, run `./board/03_download_models.sh` (for a new model) and `./board/04_install_services.sh` again.
+`config.env` is read by the Python code and by the scripts in `board/`. If you change the model or a server option, also change the service files from step 7, then run `sudo systemctl daemon-reload` and `sudo systemctl restart math-llm math-embed`.
 
 ### Troubleshooting
 
@@ -565,10 +887,10 @@ After you change a model or server setting, run `./board/03_download_models.sh` 
 | --- | --- |
 | `ssh: connect to host … port 22: Connection refused` | Empty SSH host keys. See [step 0.3](#03-connect-over-ssh). |
 | `WARNING: REMOTE HOST IDENTIFICATION HAS CHANGED` | The board's keys were recreated. Run `ssh-keygen -R <ip>` on your laptop. |
-| `apt`: package "is not installable" | Incomplete package lists. See [step 3](#step-3-install-the-build-tools). |
+| `apt`: package "is not installable" | Incomplete package lists. See [step 2.2](#22-install-the-packages). |
 | `apt` or downloads fail with certificate or time errors | The clock is wrong. Check `timedatectl`, and connect to a network with internet. |
-| `llama-server` disappears, and `journalctl -k` shows `Out of memory` | Use the service flags from [step 6](#step-6-start-the-model-servers), and stop servers you started by hand: `pkill llama-server`. |
-| `04_install_services.sh` says a port is busy | A `llama-server` you started by hand is still running. Stop it with `pkill llama-server`. |
+| `llama-server` disappears, and `journalctl -k` shows `Out of memory` | Use `--parallel 1 --cache-ram 0` as in [step 5.1](#51-start-the-server-terminal-1), and stop servers you started by hand: `pkill llama-server`. |
+| `llama-server` says the port is in use | Another `llama-server` already uses it: the service, or one you started by hand. Stop the service (`sudo systemctl stop math-llm`), or stop the other server with `pkill llama-server`. |
 | SSH drops when you turn Wi-Fi off | Expected. Use `adb shell` over USB. |
 | `predict.py` answers `D` with status `timeout` | The prompt is too long for 60 seconds. Use fewer RAG examples or a shorter prompt. |
 | `Connection refused` on port 8081 or 8082 | The service is down. Check `systemctl status math-llm` and `journalctl -u math-llm`. |

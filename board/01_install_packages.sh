@@ -2,7 +2,7 @@
 # Install the system packages needed to build llama.cpp. Needs sudo and internet.
 source "$(dirname "$0")/common.sh"
 
-PACKAGES=(build-essential cmake git pkg-config libssl-dev curl ca-certificates python3 sqlite3)
+PACKAGES=(build-essential cmake git pkg-config libssl-dev curl wget ca-certificates python3 sqlite3 jq)
 
 step "Updating the package index"
 sudo apt-get update
