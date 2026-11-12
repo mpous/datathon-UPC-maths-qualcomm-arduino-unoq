@@ -341,6 +341,8 @@ srv  server_on_li: listening on http://127.0.0.1:8081
 
 Leave this terminal open. To stop the server later, press Ctrl+C here.
 
+If you see `couldn't bind HTTP server socket` instead, another `llama-server` already uses port 8081. Run `pgrep -a llama-server` to see it, stop it with `pkill llama-server`, and start again.
+
 ### 5.2 Open a second terminal (terminal 2)
 
 On your laptop, open a new terminal window and connect again:
@@ -890,7 +892,7 @@ The scripts in `board/` run steps 1 to 8 without stopping, using the settings in
 | `apt`: package "is not installable" | Incomplete package lists. See [step 2.2](#22-install-the-packages). |
 | `apt` or downloads fail with certificate or time errors | The clock is wrong. Check `timedatectl`, and connect to a network with internet. |
 | `llama-server` disappears, and `journalctl -k` shows `Out of memory` | Use `--parallel 1 --cache-ram 0` as in [step 5.1](#51-start-the-server-terminal-1), and stop servers you started by hand: `pkill llama-server`. |
-| `llama-server` says the port is in use | Another `llama-server` already uses it: the service, or one you started by hand. Stop the service (`sudo systemctl stop math-llm`), or stop the other server with `pkill llama-server`. |
+| `couldn't bind HTTP server socket, hostname: 127.0.0.1, port: 8081` | Another `llama-server` already uses the port: the service from step 7, or one you started in another terminal. See what runs with `pgrep -a llama-server`. Stop the service with `sudo systemctl stop math-llm math-embed`, or the other server with `pkill llama-server`. |
 | SSH drops when you turn Wi-Fi off | Expected. Use `adb shell` over USB. |
 | `predict.py` answers `D` with status `timeout` | The prompt is too long for 60 seconds. Use fewer RAG examples or a shorter prompt. |
 | `Connection refused` on port 8081 or 8082 | The service is down. Check `systemctl status math-llm` and `journalctl -u math-llm`. |
