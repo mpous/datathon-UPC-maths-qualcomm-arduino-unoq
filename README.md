@@ -39,6 +39,7 @@ By the end, you'll have:
 | [10. Copy the data](#step-10-copy-the-data-to-the-board) | Laptop | `scp` | 1 min |
 | [11. Measure the baseline](#step-11-measure-the-baseline) | Board | `eval.py` | 10 min |
 | [12. Try retrieval](#step-12-try-retrieval-rag) | Board | `build_index.py`, `--rag` | 15 min |
+| [Optional: explorer](#optional-explore-the-problems-in-your-browser) | Board, in a browser | `explorer/server.py` | 10 min |
 | [13. Test offline](#step-13-test-offline-like-the-jury) | Board, over USB | `check_offline.sh` | 5 min |
 | [14. Freeze](#step-14-freeze-your-submission) | Board | `make_freeze.sh` | 2 min |
 
@@ -860,6 +861,117 @@ Every example makes the prompt longer, and the board reads about 12 tokens per s
 
 ---
 
+## Optional: Explore the problems in your browser
+
+The explorer is a small web app on the board. For each validation problem, it shows the image and the options OCR read. You can:
+
+- Answer it yourself, A to E, and see if you're right
+- Ask the model, with or without RAG examples, and see its answer, its time, and the exact prompt it got
+- See the 3 most similar training problems found with the embeddings, with their images and answers
+
+It uses only the Python standard library, like the rest of the code on the board.
+
+### Export the images
+
+On your laptop, run the preparation from step 9 again with `--save-images`. The OCR is cached, so it's quick the second time:
+
+```bash
+python3 laptop/prepare_m3kang.py --languages eng --save-images
+```
+
+It writes one PNG per problem to `data/images/`, such as `lvl-0_2015_14_eng.png`: 1,747 files and 71 MB for English. Copy them to the board:
+
+On your laptop:
+
+```bash
+scp -r data/images arduino@192.168.1.131:~/datathon-maths-arduino-unoq/data/
+```
+
+Or over USB:
+
+On your laptop:
+
+```bash
+adb push data/images /home/arduino/datathon-maths-arduino-unoq/data/
+```
+
+The images are M3Kang data too: don't commit them. `.gitignore` already excludes `data/`.
+
+### Start the explorer
+
+On the board, with the services from step 7 running and the index from step 12.1 built:
+
+```bash
+cd ~/datathon-maths-arduino-unoq
+python3 explorer/server.py
+```
+
+You should see:
+
+```text
+281 problems from data/val.jsonl, 281 with images, 911 in the retrieval index
+Servers: language model up, embeddings up, vision off
+Open http://127.0.0.1:8000 (Ctrl+C to stop)
+```
+
+The explorer only listens on the board itself. To open it on your laptop, forward the port in a second terminal.
+
+On your laptop:
+
+```bash
+ssh -L 8000:127.0.0.1:8000 arduino@192.168.1.131
+```
+
+Or over USB:
+
+On your laptop:
+
+```bash
+adb forward tcp:8000 tcp:8000
+```
+
+Then open <http://127.0.0.1:8000> in your browser. Keys: `A` to `E` answer, `M` asks the model, `N` goes to the next problem, `R` picks a random one. `--input data/train.jsonl` explores the training set instead.
+
+**What we saw:** the model answers a problem in 5 to 10 seconds without examples, and in about 30 seconds with 2 RAG examples. The similar problems are often about the same topic (cubes, for example), but their answers don't tell the model this problem's answer.
+
+### Let the model see the image (experiment)
+
+Qwen3.5 0.8B can read images with a projector file. That runs a third server, on port 8083. Download it once:
+
+```bash
+cd ~/models
+wget --continue https://huggingface.co/bartowski/Qwen_Qwen3.5-0.8B-GGUF/resolve/f36b1ea49a332ede8fe5f389bbf5b3575ef71f48/mmproj-Qwen_Qwen3.5-0.8B-f16.gguf
+sha256sum --check <<'EOF'
+1dc1351c82e41b48edb55fd6ddfa7ca60fb5a16b3d5abf3ce7054880dd022847  mmproj-Qwen_Qwen3.5-0.8B-f16.gguf
+EOF
+```
+
+Start it in its own terminal:
+
+```bash
+~/llama.cpp/build/bin/llama-server \
+  -m ~/models/Qwen_Qwen3.5-0.8B-Q8_0.gguf \
+  --mmproj ~/models/mmproj-Qwen_Qwen3.5-0.8B-f16.gguf \
+  --image-max-tokens 128 \
+  --host 127.0.0.1 --port 8083 \
+  --threads 4 --ctx-size 4096 \
+  --parallel 1 --cache-ram 0 --ctx-checkpoints 2 \
+  --jinja --reasoning off --reasoning-budget 0
+```
+
+Restart the explorer, and tick **Send the image** before you ask the model.
+
+`--image-max-tokens 128` shrinks the image to at most about 128 tokens. Without it, an image takes 300 to 650 tokens. What we measured on the board:
+
+| Image tokens | Time per problem |
+| --- | --- |
+| Default (292 and 656 tokens) | 68 s and 185 s |
+| `--image-max-tokens 128` (140 to 235 tokens) | 28 to 38 s |
+
+Only the smaller images fit in the 60-second limit. On the two problems we tried, the model got the answer wrong with the image too. Treat this as an experiment, and measure it with `eval.py` before you build on it. When you're done, stop the server with `Ctrl+C` to free its RAM.
+
+---
+
 ## Step 13: Test offline, like the jury
 
 At the official run, the board has no network. Test that now. Turning Wi-Fi off drops your SSH session, so connect over USB with `adb shell` (step 0.4) first.
@@ -919,7 +1031,7 @@ Change one thing at a time, and record each run with `eval.py --name`.
 - **Ask for the value, not the letter**, or **let it reason** in one line before `Answer: X`. Neither helped on their own in our test (step 11.3), but they may help combined with a better prompt, examples, or a bigger model. Reasoning triples the time per problem.
 - **Break the problem down.** Classify the problem type first, compute with Python where you can (arithmetic, counting), and ask the model only for what it's good at.
 - **Read the options better.** Improve the OCR, or crop the bottom of the image before OCR.
-- **Use the image.** Qwen3.5 0.8B can see images with its projector file, [`mmproj-Qwen_Qwen3.5-0.8B-f16.gguf`](https://huggingface.co/bartowski/Qwen_Qwen3.5-0.8B-GGUF) (205 MB). It costs RAM and time, so measure both.
+- **Use the image.** Qwen3.5 0.8B can see images with its projector file (205 MB). Try it in the [explorer](#let-the-model-see-the-image-experiment) first: it costs RAM and time, so measure both.
 - **Retrieve better.** Combine embeddings with keyword search, or only use examples above a similarity score.
 - **Try a different model.** Any GGUF model that fits in RAM, answers in time, and has a license you can use. Update `config.env` with its repository, revision, file, and SHA256.
 
@@ -950,6 +1062,9 @@ copilot/
 predict.py                  the official entry point
 eval.py                     accuracy, latency, and breakdowns
 build_index.py              builds data/index.db
+explorer/
+  server.py                 the web app: problems, images, model, similar problems
+  index.html                its page
 laptop/
   prepare_m3kang.py         M3Kang download, OCR, and split
   requirements.txt
@@ -975,6 +1090,7 @@ The scripts in `board/` run steps 1 to 8 without stopping, using the settings in
 | `TIME_LIMIT_SECONDS` | 60 | Time limit per problem |
 | `SEED` | 42 | Random seed |
 | `FALLBACK_ANSWER` | D | Answer when the model is too slow or fails |
+| `VISION_PORT` | 8083 | Optional server that can see images, for the explorer |
 
 `config.env` is read by the Python code and by the scripts in `board/`. If you change the model or a server option, also change the service files from step 7, then run `sudo systemctl daemon-reload` and `sudo systemctl restart math-llm math-embed`.
 

@@ -1,0 +1,276 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>M3Kang explorer</title>
+<style>
+  :root { --ink: #1d2433; --muted: #5c667a; --line: #dfe3ea; --bg: #f5f7fa; --card: #fff;
+          --ok: #1b7f3b; --ok-bg: #e6f4ea; --bad: #b3261e; --bad-bg: #fce8e6; --accent: #1f5fbf; }
+  * { box-sizing: border-box; }
+  body { margin: 0; font: 15px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; color: var(--ink); background: var(--bg); }
+  header { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; padding: 12px 20px; background: var(--card); border-bottom: 1px solid var(--line); }
+  header h1 { font-size: 18px; margin: 0 12px 0 0; }
+  .pill { font-size: 12px; padding: 2px 10px; border-radius: 999px; background: var(--bg); border: 1px solid var(--line); color: var(--muted); }
+  .pill.up { color: var(--ok); background: var(--ok-bg); border-color: transparent; }
+  .pill.down { color: var(--bad); background: var(--bad-bg); border-color: transparent; }
+  .score { margin-left: auto; font-weight: 600; }
+  main { display: grid; grid-template-columns: 260px 1fr; gap: 20px; padding: 20px; max-width: 1400px; margin: 0 auto; }
+  aside, section { background: var(--card); border: 1px solid var(--line); border-radius: 8px; }
+  aside { padding: 12px; height: calc(100vh - 110px); position: sticky; top: 20px; display: flex; flex-direction: column; gap: 8px; }
+  aside label { font-size: 13px; color: var(--muted); display: flex; gap: 6px; align-items: center; }
+  select, button { font: inherit; }
+  select { padding: 4px 6px; border: 1px solid var(--line); border-radius: 6px; background: #fff; }
+  #list { overflow-y: auto; flex: 1; border-top: 1px solid var(--line); margin-top: 4px; }
+  #list div { padding: 4px 6px; cursor: pointer; font-size: 13px; border-radius: 4px; display: flex; justify-content: space-between; }
+  #list div:hover { background: var(--bg); }
+  #list div.on { background: #e8f0fe; font-weight: 600; }
+  #list .mark { width: 34px; text-align: right; }
+  .col { display: flex; flex-direction: column; gap: 20px; min-width: 0; }
+  section { padding: 16px 20px; }
+  section h2 { font-size: 15px; margin: 0 0 10px; }
+  .meta { color: var(--muted); font-size: 13px; margin-bottom: 8px; }
+  .problem-img { max-width: 100%; border: 1px solid var(--line); border-radius: 6px; background: #fff; }
+  .text { white-space: pre-wrap; margin: 12px 0; }
+  .ocr { font-size: 13px; color: var(--muted); }
+  .ocr b { color: var(--ink); }
+  .letters { display: flex; gap: 10px; margin: 8px 0; }
+  .letters button { width: 56px; height: 48px; font-size: 20px; font-weight: 700; border: 2px solid var(--line); border-radius: 8px; background: #fff; cursor: pointer; }
+  .letters button:hover:not(:disabled) { border-color: var(--accent); }
+  .letters button.right { background: var(--ok-bg); border-color: var(--ok); color: var(--ok); }
+  .letters button.wrong { background: var(--bad-bg); border-color: var(--bad); color: var(--bad); }
+  .letters button.model { outline: 3px dashed var(--accent); outline-offset: 2px; }
+  .verdict { font-weight: 600; min-height: 1.5em; }
+  .verdict.ok { color: var(--ok); } .verdict.bad { color: var(--bad); }
+  .row { display: flex; flex-wrap: wrap; gap: 14px; align-items: center; }
+  .primary { padding: 8px 16px; border: 0; border-radius: 6px; background: var(--accent); color: #fff; font-weight: 600; cursor: pointer; }
+  .primary:disabled { opacity: .5; cursor: default; }
+  .secondary { padding: 8px 16px; border: 1px solid var(--line); border-radius: 6px; background: #fff; cursor: pointer; }
+  table { border-collapse: collapse; margin-top: 10px; font-size: 14px; }
+  td { padding: 3px 14px 3px 0; } td:first-child { color: var(--muted); }
+  details { margin-top: 10px; } summary { cursor: pointer; color: var(--accent); }
+  pre { white-space: pre-wrap; background: var(--bg); padding: 10px; border-radius: 6px; font-size: 12px; max-height: 360px; overflow: auto; }
+  .similar { display: grid; gap: 12px; }
+  .sim { border: 1px solid var(--line); border-radius: 6px; padding: 10px; }
+  .sim img { max-width: 100%; max-height: 160px; display: block; margin-top: 6px; }
+  .hint { color: var(--muted); font-size: 13px; }
+  kbd { border: 1px solid var(--line); border-bottom-width: 2px; border-radius: 4px; padding: 0 5px; font-size: 12px; background: #fff; }
+  @media (max-width: 800px) { main { grid-template-columns: 1fr; } aside { position: static; height: 300px; } }
+</style>
+</head>
+<body>
+<header>
+  <h1>M3Kang explorer</h1>
+  <span id="s-llm" class="pill">language model</span>
+  <span id="s-embed" class="pill">embeddings</span>
+  <span id="s-vision" class="pill">vision</span>
+  <span id="s-data" class="pill"></span>
+  <span class="score" id="score">You 0/0 · Model 0/0</span>
+</header>
+<main>
+  <aside>
+    <label>Language <select id="f-lang"><option value="">all</option></select></label>
+    <label>Level <select id="f-level"><option value="">all</option></select></label>
+    <label><input type="checkbox" id="f-options"> Only problems with OCR options</label>
+    <button class="secondary" id="random">Random problem</button>
+    <div id="list"></div>
+  </aside>
+  <div class="col">
+    <section>
+      <div class="meta" id="meta">Loading…</div>
+      <img id="img" class="problem-img" alt="">
+      <div class="text" id="text"></div>
+      <div class="ocr" id="ocr"></div>
+    </section>
+
+    <section>
+      <h2>1. Your answer</h2>
+      <div class="letters" id="mine"></div>
+      <div class="verdict" id="my-verdict"></div>
+    </section>
+
+    <section>
+      <h2>2. Ask the model</h2>
+      <div class="row">
+        <label>Solved examples (RAG)
+          <select id="rag"><option>0</option><option>1</option><option>2</option><option>3</option></select></label>
+        <label><input type="checkbox" id="vision"> Send the image (vision server, slow)</label>
+        <button class="primary" id="ask">Ask the model</button>
+        <span class="hint" id="asking"></span>
+      </div>
+      <div id="model"></div>
+    </section>
+
+    <section>
+      <h2>3. Similar solved problems (embeddings)</h2>
+      <div class="hint" id="sim-hint"></div>
+      <div class="similar" id="similar"></div>
+    </section>
+
+    <section class="row">
+      <button class="primary" id="next">Next problem</button>
+      <span class="hint">Keys: <kbd>A</kbd>–<kbd>E</kbd> answer · <kbd>M</kbd> ask the model · <kbd>N</kbd> next · <kbd>R</kbd> random</span>
+    </section>
+  </div>
+</main>
+<script>
+const $ = id => document.getElementById(id);
+const api = async (path, body) => {
+  const r = await fetch(path, body ? {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(body)} : {});
+  const data = await r.json();
+  if (!r.ok) throw new Error(data.error || r.statusText);
+  return data;
+};
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;"}[c]));
+
+let info, all = [], shown = [], current = null, myChoice = null;
+const results = {};  // key -> {me: bool, model: bool}
+
+function setPill(id, up, text) { const el = $(id); el.textContent = text; el.className = "pill " + (up ? "up" : "down"); }
+
+function score() {
+  const v = Object.values(results);
+  const me = v.filter(r => "me" in r), model = v.filter(r => "model" in r);
+  $("score").textContent = `You ${me.filter(r => r.me).length}/${me.length} · Model ${model.filter(r => r.model).length}/${model.length}`;
+}
+
+function renderList() {
+  const lang = $("f-lang").value, level = $("f-level").value, opts = $("f-options").checked;
+  shown = all.filter(p => (!lang || p.language === lang) && (level === "" || String(p.level) === level) && (!opts || p.options));
+  $("list").innerHTML = shown.map(p => {
+    const r = results[p.key] || {};
+    const mark = ("me" in r ? (r.me ? "✓" : "✗") : "") + ("model" in r ? (r.model ? " ✓" : " ✗") : "");
+    return `<div data-key="${esc(p.key)}" class="${current && p.key === current.key ? "on" : ""}">
+      <span>L${p.level} · ${esc(p.id.replace(/^lvl-\d_/, ""))} · ${esc(p.language)}</span><span class="mark">${mark}</span></div>`;
+  }).join("");
+}
+
+async function open(key) {
+  current = await api("/api/problem?key=" + encodeURIComponent(key));
+  myChoice = null;
+  $("meta").textContent = `${current.id} · ${current.language} · level ${current.level}${current.year ? " · " + current.year : ""}`;
+  $("img").style.display = current.image ? "" : "none";
+  if (current.image) { $("img").src = "/image/" + encodeURIComponent(current.key); $("img").alt = "Problem " + current.id; }
+  $("text").textContent = current.text;
+  const o = current.options || {};
+  $("ocr").innerHTML = Object.keys(o).length
+    ? "Options read by OCR (what the model sees): " + "ABCDE".split("").map(l => `<b>${l})</b> ${esc(o[l])}`).join(" &nbsp; ")
+    : "OCR couldn't read the options. Without the image, the model sees only the question.";
+  $("mine").innerHTML = "ABCDE".split("").map(l => `<button data-l="${l}">${l}</button>`).join("");
+  $("my-verdict").textContent = ""; $("my-verdict").className = "verdict";
+  $("model").innerHTML = ""; $("asking").textContent = "";
+  renderList();
+  const row = document.querySelector(`#list div[data-key="${CSS.escape(key)}"]`);
+  if (row) row.scrollIntoView({block: "nearest"});
+  loadSimilar();
+}
+
+async function answer(letter) {
+  if (!current || myChoice) return;
+  myChoice = letter;
+  const r = await api("/api/check", {key: current.key, choice: letter});
+  (results[current.key] ||= {}).me = r.correct;
+  document.querySelectorAll("#mine button").forEach(b => {
+    b.disabled = true;
+    if (b.dataset.l === r.label) b.classList.add("right");
+    else if (b.dataset.l === letter) b.classList.add("wrong");
+  });
+  $("my-verdict").textContent = r.correct ? "Correct!" : `Not this time: the answer is ${r.label}.`;
+  $("my-verdict").className = "verdict " + (r.correct ? "ok" : "bad");
+  score(); renderList();
+}
+
+async function ask() {
+  if (!current) return;
+  const key = current.key, start = Date.now();
+  $("ask").disabled = true;
+  const tick = setInterval(() => $("asking").textContent = `Thinking… ${((Date.now() - start) / 1000).toFixed(0)} s`, 250);
+  try {
+    const r = await api("/api/ask", {key, rag: +$("rag").value, vision: $("vision").checked});
+    if (!current || current.key !== key) return;
+    (results[key] ||= {}).model = r.correct;
+    const limit = info.time_limit, over = r.seconds > limit;
+    document.querySelectorAll("#mine button").forEach(b => b.classList.toggle("model", b.dataset.l === r.answer));
+    $("model").innerHTML = `
+      <div class="verdict ${r.correct ? "ok" : "bad"}">The model says ${esc(r.answer)}: ${r.correct ? "correct" : "wrong, the answer is " + esc(r.label)}.</div>
+      <table>
+        <tr><td>Time</td><td>${r.seconds} s ${over ? `<b style="color:var(--bad)">over the ${limit} s limit</b>` : `(limit ${limit} s)`}</td></tr>
+        <tr><td>Prompt tokens</td><td>${r.prompt_tokens}</td></tr>
+        <tr><td>Status</td><td>${esc(r.status)}</td></tr>
+        ${r.examples.length ? `<tr><td>Examples used</td><td>${r.examples.map(e => `${esc(e.id)} (${e.score}, answer ${esc(e.label)})`).join(", ")}</td></tr>` : ""}
+      </table>
+      <p class="hint">Next: ${nextStep(r)}</p>
+      <details><summary>Prompt sent to the model</summary><pre>${esc(r.prompt)}</pre></details>`;
+    score(); renderList();
+  } catch (e) {
+    $("model").innerHTML = `<div class="verdict bad">${esc(e.message)}</div>`;
+  } finally {
+    clearInterval(tick); $("asking").textContent = ""; $("ask").disabled = false;
+  }
+}
+
+function nextStep(r) {
+  if (r.status !== "ok") return "the model ran out of time. Use fewer examples, or a shorter prompt in copilot/llm.py.";
+  if (r.seconds > info.time_limit) return "the answer came too late to count. Images are for exploring, not for the official run.";
+  if (!current.options || !Object.keys(current.options).length)
+    return "the options are only in the picture, so the model is guessing. Try sending the image, or skip these problems.";
+  if (!r.correct && !r.examples.length && info.index) return "try again with 1 to 3 solved examples (RAG) and compare.";
+  if (!r.correct) return "open the prompt below and ask yourself what the model is missing. Then change copilot/llm.py and measure with eval.py.";
+  return "one right answer can be luck. Run eval.py on the whole validation set to see if a change really helps.";
+}
+
+async function loadSimilar() {
+  $("similar").innerHTML = "";
+  if (!info.index) { $("sim-hint").textContent = "No retrieval index yet. Build it with: python3 build_index.py --only-with-options"; return; }
+  if (!info.embed) { $("sim-hint").textContent = "The embedding server is down (port 8082)."; return; }
+  const key = current.key;
+  $("sim-hint").textContent = "Searching…";
+  const hits = await api(`/api/similar?key=${encodeURIComponent(key)}&k=3`);
+  if (current.key !== key) return;
+  $("sim-hint").textContent = "The training problems whose embeddings are closest to this one. A score near 1 means very similar. With RAG, the model sees the top ones as solved examples.";
+  $("similar").innerHTML = hits.map(h => `
+    <div class="sim"><b>${h.score}</b> · ${esc(h.id)} · level ${h.level} · answer <b>${esc(h.label)}</b>
+      ${h.image ? `<img loading="lazy" src="/image/${encodeURIComponent(h.key)}" alt="Similar problem ${esc(h.id)}">` : `<div class="text">${esc(h.text)}</div>`}
+    </div>`).join("");
+}
+
+function next(randomly) {
+  if (!shown.length) return;
+  const i = shown.findIndex(p => current && p.key === current.key);
+  const j = randomly ? Math.floor(Math.random() * shown.length) : (i + 1) % shown.length;
+  open(shown[j].key);
+}
+
+async function main() {
+  info = await api("/api/info");
+  setPill("s-llm", info.llm, "language model " + (info.llm ? "up" : "down"));
+  setPill("s-embed", info.embed, "embeddings " + (info.embed ? "up" : "down"));
+  setPill("s-vision", info.vision, "vision " + (info.vision ? "up" : "off"));
+  $("s-data").textContent = `${info.count} problems · ${info.images} images · ${info.index} in index`;
+  $("vision").disabled = !info.vision;
+  $("rag").disabled = !info.index;
+  info.languages.forEach(l => $("f-lang").insertAdjacentHTML("beforeend", `<option>${esc(l)}</option>`));
+  info.levels.forEach(l => $("f-level").insertAdjacentHTML("beforeend", `<option>${l}</option>`));
+  all = await api("/api/problems");
+  renderList();
+  if (shown.length) open(shown[0].key);
+}
+
+$("list").addEventListener("click", e => { const d = e.target.closest("div[data-key]"); if (d) open(d.dataset.key); });
+$("mine").addEventListener("click", e => { if (e.target.dataset.l) answer(e.target.dataset.l); });
+["f-lang", "f-level", "f-options"].forEach(id => $(id).addEventListener("change", renderList));
+$("ask").addEventListener("click", ask);
+$("next").addEventListener("click", () => next(false));
+$("random").addEventListener("click", () => next(true));
+document.addEventListener("keydown", e => {
+  if (e.target.tagName === "SELECT" || e.metaKey || e.ctrlKey || e.altKey) return;
+  const k = e.key.toUpperCase();
+  if ("ABCDE".includes(k) && k.length === 1) answer(k);
+  else if (k === "M") ask();
+  else if (k === "N") next(false);
+  else if (k === "R") next(true);
+});
+main();
+</script>
+</body>
+</html>
