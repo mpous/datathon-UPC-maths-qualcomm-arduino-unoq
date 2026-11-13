@@ -32,9 +32,8 @@ Take into account that the [Arduino UNO Q board](https://store.arduino.cc/pages/
  
 #### References:
 * [Generative AI at the Edge with the UNO Q and its RAG](https://mjrovai.github.io/genai-uno-q/content/rag/rag.html) at the Edge chapter (Marcelo Rovai)
-Running local LLMs on the Arduino UNO Q board: a practical guide (Arduino Blog)
-[How to Run High-Performance LLMs Locally on the Arduino UNO Q](https://projecthub.arduino.cc/marc-edgeimpulse/running-local-llms-and-vlms-on-the-arduino-uno-q-with-yzma-74e288)
-[qualcomm/M3Kang (dataset and paper)](https://huggingface.co/datasets/qualcomm/M3Kang)
+* [How to Run High-Performance LLMs Locally on the Arduino UNO Q](https://projecthub.arduino.cc/marc-edgeimpulse/running-local-llms-and-vlms-on-the-arduino-uno-q-with-yzma-74e288)
+* [qualcomm/M3Kang (dataset and paper)](https://huggingface.co/datasets/qualcomm/M3Kang)
 
 
 ### The repository
@@ -45,21 +44,20 @@ Follow the steps in order. Each one ends with a check, so you know it worked bef
 
 By the end, you'll have:
 
-- llama.cpp built on the board by hand, at a pinned commit
-- Qwen3.5 0.8B (the language model) and bge-small-en-v1.5 (the embedding model) downloaded and verified
-- A hello world with each model, so you know what the servers do
+- `llama.cpp` built on the board by hand, at a pinned commit
+- `Qwen3.5 0.8B` (the language model) and `bge-small-en-v1.5` (the embedding model) downloaded and verified
+- A `hello world` with each model, so you know what the servers do
 - Both models running as services that start when the board boots
 - `predict.py`, which answers a file of problems with one letter each, A to E
-- Your M3Kang training and validation sets, and the baseline accuracy you need to beat
-- A test that runs with the network off, the way the jury will run it
-- A frozen submission with a hash to send to the organizers
+- Your `M3Kang` training and validation sets, and the baseline accuracy you need to beat
+- A test that runs with the network off
 
 ## What you need
 
-- An Arduino UNO Q with 4 GB of RAM, a USB-C cable, and a USB-C power supply (5 V, 3 A)
+- An Arduino UNO Q with 4 GB of RAM, a USB-C cable, and a USB-C power supply (5 V, 3 A). You will need to update it.
+- [Arduino App Lab](https://bit.ly/arduino-applab) to download the latest Arduino UNO Q versions.
 - A laptop with Python 3.10 or later, Git, and [Arduino App Lab](https://www.arduino.cc/en/software/#app-lab-section) installed
-- A Wi-Fi network that the board and the laptop share, with internet access
-- About 2.5 hours: most of it is waiting for the build, the downloads, and the OCR
+- A Wi-Fi network that the board and the laptop share, with Internet access
 
 ## The steps at a glance
 
@@ -90,16 +88,16 @@ Every code block holds only what you type: copy it and paste it into the termina
 
 ## Step 0: Connect to the board
 
-The UNO Q runs Debian Linux on its Qualcomm processor. You'll work in a terminal on it, over SSH.
+The UNO Q runs Debian Linux on its Qualcomm QRB2210 processor. You'll work in a terminal on it, over SSH.
 
 ### 0.1 First setup in App Lab
 
 1. Connect the board to your laptop with the USB-C cable.
-2. Open Arduino App Lab. It finds the board and starts the first setup.
-3. Give the board a name, set a password for the `arduino` user, and connect it to your Wi-Fi network.
-4. Let App Lab install any updates it offers, and wait for the board to restart.
+2. Open [Arduino App Lab](https://bit.ly/arduino-applab). It finds the board and starts the first setup.
+3. Give the board a name, set a password for the `arduino` user, and connect it to your Wi-Fi network. Use the password `opensource`.
+4. **Let App Lab install any updates it offers, and wait for the board to restart**. This may take some minutes.
 
-Write the password down. You'll need it for SSH and for `sudo`.
+Write the password down. You will need it for SSH and for `sudo`.
 
 ### 0.2 Find the board's IP address
 
@@ -109,7 +107,7 @@ In App Lab, the board's details show its IP address. Or, from the board's termin
 hostname -I
 ```
 
-The first address, such as `192.168.1.131`, is the one you want.
+The first address, such as `192.168.1.131` (e.g.), is the one you want.
 
 ### 0.3 Connect over SSH
 
@@ -119,25 +117,9 @@ On your laptop:
 ssh arduino@192.168.1.131
 ```
 
-Type `yes` the first time, then your password. You should see a prompt like `arduino@UNOQ-4GB:~$`.
+Type `yes` the first time, then your password. You should see a prompt like `arduino@name-of-your-board:~$`.
 
-**If you see `Connection refused`**, the board's SSH host keys may be empty. This happened on one of our test boards. Open a shell over USB instead (see 0.4), then recreate the keys:
-
-```bash
-sudo rm -f /etc/ssh/ssh_host_*
-sudo ssh-keygen -A
-sudo systemctl reset-failed ssh
-sudo systemctl restart ssh
-```
-
-Then, on your laptop, remove the old key and connect again:
-
-```bash
-ssh-keygen -R 192.168.1.131
-ssh arduino@192.168.1.131
-```
-
-### 0.4 Connect over USB with adb (fallback)
+### 0.4 If SSH doesn't work, connect over USB with adb (fallback)
 
 The board also accepts `adb`, the Android Debug Bridge, over the USB-C cable. App Lab uses it, and you'll need it in step 13, when Wi-Fi is off. Install it with [Android SDK Platform-Tools](https://developer.android.com/tools/releases/platform-tools), or `brew install --cask android-platform-tools` on macOS.
 
@@ -151,7 +133,7 @@ You should see your board's serial number:
 
 ```text
 List of devices attached
-2663959418      device
+2663959333      device
 ```
 
 Then open a shell on the board:
