@@ -1057,6 +1057,21 @@ M3Kang has the same problem in many languages, Catalan included, with the same `
 
 **Measure it:** accuracy and retrieval quality by language, with `eval.py --languages cat` and `--languages eng` on the same problems.
 
+#### Problems for students with dyslexia or dyscalculia
+
+Kangaroo problems are long, dense texts, full of numbers. For a student with dyslexia, the reading gets in the way of the maths. For a student with dyscalculia, the numbers and the symbols do. The copilot can adapt each M3Kang problem, without changing the maths:
+
+- **For dyslexia:** short sentences, one idea per line, everyday words, the question at the end and on its own line, and the options one per line. On the web page, a large, well-spaced font that's installed on the board, not loaded from the internet.
+- **For dyscalculia:** the same problem with smaller numbers first (an easier neighbour from the embeddings, or the same problem rewritten), quantities shown as dots or bars on the LED matrix, and one step at a time instead of the whole calculation.
+
+The student, or their teacher, chooses the mode. Nobody is labelled by the copilot.
+
+Rewriting a problem means writing 50 to 100 tokens, which takes 10 to 20 seconds on the board. Don't do it while the student waits: adapt the problem bank ahead of time, on the board, and store the versions in SQLite next to the originals. The student then gets an adapted problem instantly.
+
+The rewrite must keep the problem the same. Check it in code: every number of the original, and every option, must still be there, and the correct answer must not change.
+
+**Measure it:** how many rewrites pass the code check; whether the model's own accuracy on the rewritten problems stays close to the originals, as a sign that the maths didn't change; and, on 20 problems you judge by hand, whether the rewrite is clearer and still correct. Measure readability with numbers, such as words per sentence and long words per sentence. If you can, show a few adapted problems to a teacher or a specialist in learning difficulties, and report what they said.
+
 ### 13.3 Ideas to reason
 
 Every team's `predict.py` is scored on the hidden test set, whatever else you build. Change one thing at a time, and record each run with `eval.py --name`.

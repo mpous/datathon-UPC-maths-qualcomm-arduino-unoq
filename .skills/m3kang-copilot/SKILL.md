@@ -83,6 +83,7 @@ The copilot should guide, not hand out answers. Patterns that fit the board:
 
 - **Hint ladder:** a similar, easier solved problem from the index (lower `level`), then the topic of the neighbours, then a one-sentence model hint, then the solution only on request. Check every model hint in code: reject it if it contains the correct option's value.
 - **Adaptive practice:** pick the next problem from the nearest neighbours, one level up after a right answer, same topic one level down after a wrong one. No model in the loop. Keep the student profile in SQLite on the board.
+- **Adapted problems for dyslexia or dyscalculia:** rewrite problems ahead of time, on the board, into short sentences and one idea per line, or with smaller numbers and one step at a time, and store them in SQLite. Check every rewrite in code: all the original numbers and options are still there, and the answer is unchanged. Let the student or the teacher choose the mode, and never label a student.
 - **Debate:** send the problem to the server as soon as it's shown, so `cache_prompt` has it. When the class votes, the model only reads the short request.
 
 Keep teaching code separate from `predict.py`, for example in `copilot/tutor.py`, so the official run never changes by accident. For a web page and the LED matrix, use the `unoq-hardware-ui` skill. Teams use no external modules.
