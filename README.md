@@ -925,7 +925,7 @@ On the board, with the services from step 7 running and the index from step 12.1
 
 ```bash
 cd ~/datathon-UPC-maths-qualcomm-arduino-unoq
-python3 explorer/server.py
+python3 explorer/server.py --host 0.0.0.0
 ```
 
 You should see:
