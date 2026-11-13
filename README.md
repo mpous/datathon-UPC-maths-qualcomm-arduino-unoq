@@ -991,60 +991,8 @@ Restart the explorer, and tick **Send the image** before you ask the model.
 
 Only the smaller images fit in the 60-second limit. On the two problems we tried, the model got the answer wrong with the image too. Treat this as an experiment, and measure it with `eval.py` before you build on it. When you're done, stop the server with `Ctrl+C` to free its RAM.
 
----
 
-## Step 13: Test offline, like the jury
-
-At the official run, the board has no network. Test that now. Turning Wi-Fi off drops your SSH session, so connect over USB with `adb shell` (step 0.4) first.
-
-On your laptop:
-
-```bash
-adb shell
-```
-
-Then, in that shell on the board:
-
-```bash
-cd ~/datathon-maths-arduino-unoq
-sudo nmcli radio wifi off
-./freeze/check_offline.sh data/val.jsonl 20
-sudo nmcli radio wifi on
-```
-
-Add the same options you'll submit, such as `--rag 1`, after the count:
-
-```bash
-./freeze/check_offline.sh data/val.jsonl 20 --rag 1
-```
-
-The script checks that there's no route to the internet, that both servers are up, and then runs `predict.py` twice on the same problems. It fails if:
-
-- Any answer isn't a single letter, A to E
-- The two runs give different answers
-- Any problem timed out, failed, or went over the time limit
-
-**Check:** it ends with `OK` and no `FAIL` lines.
-
----
-
-## Step 14: Freeze your submission
-
-Before the test set is released, freeze what you'll run:
-
-```bash
-./freeze/make_freeze.sh my-team-name
-```
-
-It writes `freeze/manifest.txt` (your Git commit, the llama.cpp version, the SHA256 of every model in `~/models`, and the service command lines), and packs your code, indexes, and manifest into `freeze/my-team-name-<time>.tar.gz`. It doesn't pack `train.jsonl` or `val.jsonl`.
-
-It prints one SHA256 hash. **Send that hash to the organizers before the deadline.** At the official run, they check that your board matches it.
-
-After you freeze, don't change the code, the models, or `config.env`.
-
----
-
-## Ideas to beat the baseline
+### Ideas to beat the baseline
 
 Change one thing at a time, and record each run with `eval.py --name`.
 
@@ -1056,50 +1004,31 @@ Change one thing at a time, and record each run with `eval.py --name`.
 - **Retrieve better.** Combine embeddings with keyword search, or only use examples above a similarity score.
 - **Try a different model.** Any GGUF model that fits in RAM, answers in time, and has a license you can use. Update `config.env` with its repository, revision, file, and SHA256.
 
+
 ---
 
-## Reference
+## Step 13: Brainstorm your idea
 
-### Repository layout
 
-```
-config.env                  every setting: versions, models, ports, time limit
-board/
-  common.sh                 shared helpers for the board scripts
-  00_check_board.sh         read-only health check
-  01_install_packages.sh    apt packages, with an index repair
-  02_build_llama_cpp.sh     llama.cpp at the pinned commit
-  03_download_models.sh     pinned, hash-checked model downloads
-  04_install_services.sh    installs and starts the systemd services
-  05_smoke_test.sh          end-to-end check
-  systemd/                  service templates
-copilot/
-  config.py                 reads config.env
-  client.py                 HTTP to the local servers
-  llm.py                    prompt, grammar, one-letter answer
-  embed.py                  embeddings
-  rag.py                    SQLite index and search
-  pipeline.py               solve one problem within the time limit
-predict.py                  the official entry point
-eval.py                     accuracy, latency, and breakdowns
-build_index.py              builds data/index.db
-explorer/
-  server.py                 the web app: problems, images, model, similar problems
-  index.html                its page
-laptop/
-  prepare_m3kang.py         M3Kang download, OCR, and split
-  requirements.txt
-data/
-  sample_problems.jsonl     five made-up problems
-freeze/
-  check_offline.sh          the offline, repeatable test
-  make_freeze.sh            the submission archive and hash
-results/                    eval outputs and ablations.csv (not committed)
-```
+---
 
-The scripts in `board/` run steps 1 to 8 without stopping, using the settings in `config.env`. Do the steps by hand on your first board, so you know what each one does. Use the scripts to set up more boards, or to repair one.
 
-### Settings in config.env
+---
+
+## Step 14: Implement the idea and prepare the presentation
+
+---
+
+## Step 15: Publish your project
+
+
+
+
+
+---
+
+
+## Settings in config.env
 
 | Setting | Default | Meaning |
 | --- | --- | --- |
@@ -1115,7 +1044,7 @@ The scripts in `board/` run steps 1 to 8 without stopping, using the settings in
 
 `config.env` is read by the Python code and by the scripts in `board/`. If you change the model or a server option, also change the service files from step 7, then run `sudo systemctl daemon-reload` and `sudo systemctl restart math-llm math-embed`.
 
-### Troubleshooting
+## Troubleshooting
 
 | Symptom | Cause and fix |
 | --- | --- |
@@ -1129,7 +1058,7 @@ The scripts in `board/` run steps 1 to 8 without stopping, using the settings in
 | `predict.py` answers `D` with status `timeout` | The prompt is too long for 60 seconds. Use fewer RAG examples or a shorter prompt. |
 | `Connection refused` on port 8081 or 8082 | The service is down. Check `systemctl status math-llm` and `journalctl -u math-llm`. |
 
-### Credits and licenses
+## Credits and licenses
 
 - **M3Kang**: Torres-Camps et al., 2026, [arXiv:2601.16218](https://arxiv.org/abs/2601.16218). Qualcomm. [Dataset card and license](https://huggingface.co/datasets/qualcomm/M3Kang): research use only. Problems from the Kangaroo math competition.
 - **llama.cpp**: [ggml-org/llama.cpp](https://github.com/ggml-org/llama.cpp), MIT license.
