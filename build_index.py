@@ -4,7 +4,7 @@
     python3 build_index.py                       # data/train.jsonl -> data/index.db
     python3 build_index.py --only-with-options   # skip problems whose options are pictures
 
-Run it once on the board, before the code freeze. Only training problems go
+Run it once on the board, after you copy the data. Only training problems go
 in, so validation problems can never retrieve themselves.
 """
 import argparse

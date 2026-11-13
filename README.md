@@ -38,7 +38,7 @@ Take into account that the [Arduino UNO Q board](https://store.arduino.cc/pages/
 
 ### The repository
 
-This repository sets up what every team must run on the Arduino UNO Q (4 GB) before the datathon starts: a small language model that answers M3Kang math problems offline, an embedding model for retrieval, and the scripts to measure, test, and freeze your submission.
+This repository sets up what every team must run on the Arduino UNO Q (4 GB) before the datathon starts: a small language model that answers M3Kang math problems offline, an embedding model for retrieval, and the scripts to measure and improve your copilot.
 
 Follow the steps in order. Each one ends with a check, so you know it worked before you move on.
 
@@ -50,7 +50,6 @@ By the end, you'll have:
 - Both models running as services that start when the board boots
 - `predict.py`, which answers a file of problems with one letter each, A to E
 - Your `M3Kang` training and validation sets, and the baseline accuracy you need to beat
-- A test that runs with the network off
 
 ## What you need
 
@@ -77,8 +76,9 @@ By the end, you'll have:
 | [11. Measure the baseline](#step-11-measure-the-baseline) | Board | `eval.py` | 10 min |
 | [12. Try retrieval](#step-12-try-retrieval-rag) | Board | `build_index.py`, `--rag` | 15 min |
 | [Optional: explorer](#optional-explore-the-problems-in-your-browser) | Board, in a browser | `explorer/server.py` | 10 min |
-| [13. Test offline](#step-13-test-offline-like-the-jury) | Board, over USB | `check_offline.sh` | 5 min |
-| [14. Freeze](#step-14-freeze-your-submission) | Board | `make_freeze.sh` | 2 min |
+| [13. Brainstorm your idea](#step-13-brainstorm-your-idea) | Team | Pick one idea, and how you'll measure it | 1 h |
+| [14. Implement and present](#step-14-implement-the-idea-and-prepare-the-presentation) | Board | `eval.py`, App Lab | Most of the datathon |
+| [15. Publish](#step-15-publish-your-project) | Laptop | GitHub, Arduino Project Hub | 2 h |
 
 Steps 1 to 8 are the minimum every team must have working on the board. Each command is shown in full, with what it does and what you should see.
 
@@ -121,7 +121,7 @@ Type `yes` the first time, then your password. You should see a prompt like `ard
 
 ### 0.4 If SSH doesn't work, connect over USB with adb (fallback)
 
-The board also accepts `adb`, the Android Debug Bridge, over the USB-C cable. App Lab uses it, and you'll need it in step 13, when Wi-Fi is off. Install it with [Android SDK Platform-Tools](https://developer.android.com/tools/releases/platform-tools), or `brew install --cask android-platform-tools` on macOS.
+The board also accepts `adb`, the Android Debug Bridge, over the USB-C cable. App Lab uses it, and you'll need it when Wi-Fi is off, for example during your demo. Install it with [Android SDK Platform-Tools](https://developer.android.com/tools/releases/platform-tools), or `brew install --cask android-platform-tools` on macOS.
 
 On your laptop, list the boards connected over USB:
 
@@ -666,11 +666,11 @@ To try other server options, stop the service first (`sudo systemctl stop math-l
 
 ```bash
 cd ~
-git clone https://github.com/mpous/datathon-maths-arduino-unoq.git
-cd datathon-maths-arduino-unoq
+git clone https://github.com/mpous/datathon-UPC-maths-qualcomm-arduino-unoq.git
+cd datathon-UPC-maths-qualcomm-arduino-unoq
 ```
 
-Every later command on the board runs from this folder, `~/datathon-maths-arduino-unoq`. If your team forks the repository, clone your fork instead, and commit your changes there.
+Every later command on the board runs from this folder, `~/datathon-UPC-maths-qualcomm-arduino-unoq`. If your team forks the repository, clone your fork instead, and commit your changes there.
 
 The code uses only Python's standard library. There's no `pip` on the board, and you don't need it.
 
@@ -704,8 +704,8 @@ The test checks that the pipeline runs, not that it's right. Don't be surprised 
 On your laptop:
 
 ```bash
-git clone https://github.com/mpous/datathon-maths-arduino-unoq.git
-cd datathon-maths-arduino-unoq
+git clone https://github.com/mpous/datathon-UPC-maths-qualcomm-arduino-unoq.git
+cd datathon-UPC-maths-qualcomm-arduino-unoq
 python3 -m venv .venv
 source .venv/bin/activate
 pip install -r laptop/requirements.txt
@@ -780,7 +780,7 @@ From the repository folder on your laptop:
 On your laptop:
 
 ```bash
-scp data/train.jsonl data/val.jsonl arduino@192.168.1.131:~/datathon-maths-arduino-unoq/data/
+scp data/train.jsonl data/val.jsonl arduino@192.168.1.131:~/datathon-UPC-maths-qualcomm-arduino-unoq/data/
 ```
 
 Or over USB:
@@ -788,7 +788,7 @@ Or over USB:
 On your laptop:
 
 ```bash
-adb push data/train.jsonl data/val.jsonl /home/arduino/datathon-maths-arduino-unoq/data/
+adb push data/train.jsonl data/val.jsonl /home/arduino/datathon-UPC-maths-qualcomm-arduino-unoq/data/
 ```
 
 **Check:**
@@ -905,7 +905,7 @@ It writes one PNG per problem to `data/images/`, such as `lvl-0_2015_14_eng.png`
 On your laptop:
 
 ```bash
-scp -r data/images arduino@192.168.1.131:~/datathon-maths-arduino-unoq/data/
+scp -r data/images arduino@192.168.1.131:~/datathon-UPC-maths-qualcomm-arduino-unoq/data/
 ```
 
 Or over USB:
@@ -913,7 +913,7 @@ Or over USB:
 On your laptop:
 
 ```bash
-adb push data/images /home/arduino/datathon-maths-arduino-unoq/data/
+adb push data/images /home/arduino/datathon-UPC-maths-qualcomm-arduino-unoq/data/
 ```
 
 The images are M3Kang data too: don't commit them. `.gitignore` already excludes `data/`.
@@ -923,7 +923,7 @@ The images are M3Kang data too: don't commit them. `.gitignore` already excludes
 On the board, with the services from step 7 running and the index from step 12.1 built:
 
 ```bash
-cd ~/datathon-maths-arduino-unoq
+cd ~/datathon-UPC-maths-qualcomm-arduino-unoq
 python3 explorer/server.py
 ```
 
@@ -991,10 +991,74 @@ Restart the explorer, and tick **Send the image** before you ask the model.
 
 Only the smaller images fit in the 60-second limit. On the two problems we tried, the model got the answer wrong with the image too. Treat this as an experiment, and measure it with `eval.py` before you build on it. When you're done, stop the server with `Ctrl+C` to free its RAM.
 
+---
 
-### Ideas to beat the baseline
+## Step 13: Brainstorm your idea
 
-Change one thing at a time, and record each run with `eval.py --name`.
+You now have a copilot that works on the board, and a number to beat. Before you write more code, take an hour as a team to choose what you'll build. Pick one idea that you can finish, demo live, and measure before the datathon ends.
+
+### 13.1 Start from what the board can do
+
+What we measured in steps 5 to 12:
+
+| What | Cost on the board |
+| --- | --- |
+| Embed one problem with bge-small | A fraction of a second (911 problems in about 4 minutes) |
+| Search the retrieval index | A loop over vectors in memory, much faster than the model |
+| Read the prompt (prefill) | About 11 tokens per second |
+| Write the answer | About 6 tokens per second |
+| Answer one problem with one letter | 9 seconds on average |
+| The same, with 2 RAG examples | About 30 seconds |
+| One line of reasoning, then the letter | 26 seconds on average |
+| Send the image to the vision server | 28 to 38 seconds |
+
+The rule of thumb: embeddings, retrieval, Python, and the hardware are almost free, and the language model is expensive. The best ideas use the model for a few short things, and do the rest with M3Kang, the embeddings, and code.
+
+### 13.2 Ideas to teach
+
+Each idea uses M3Kang in a different way. Take one as it is, mix two, or use them to find your own.
+
+#### The hint ladder
+
+The student gets a problem. Each time they ask for help, the copilot climbs one rung, and never jumps straight to the answer:
+
+1. **A similar, easier problem**, already solved: the nearest neighbour in the embeddings, at a lower level. M3Kang is the library of worked examples.
+2. **The topic or the method**, taken from what the neighbours have in common, such as "This is a counting problem: list the cases."
+3. **A one-sentence hint from the model**, that must not give the answer away. Check it in Python before you show it: reject a hint that contains the correct option's value.
+4. **The solution**, only when the student asks for it on purpose.
+
+Rungs 1 and 2 cost less than a second. Only rung 3 uses the model, and a one-sentence hint is short to write.
+
+**Measure it:** how often a hint leaks the answer, checked by code on the whole validation set; how long each rung takes; and, on 20 problems you judge by hand, whether the similar problem is really easier and about the same topic.
+
+#### The adaptive trainer
+
+Build a map of M3Kang: every problem with its embedding, its level, and its topic. The student answers on the board: two Modulino buttons move between A and E on the LED matrix, and the third confirms. The copilot picks the next problem:
+
+- **Right answer:** a neighbour on the map, one level up
+- **Wrong answer:** a neighbour on the same topic, one level down
+
+There's no language model in the loop, so each step is fast. The student's profile, with the topics and levels they get right or wrong, stays in a SQLite file on the board. Nothing leaves the device.
+
+**Measure it:** the time per step, and simulated students. Answer the validation set with a student who is always right below level 2 and always wrong above it, say. Does the path stay on topic? Does it settle at the right level?
+
+#### The classroom debate box
+
+One board for the whole class. Teams vote for an answer with the buttons, and the LED matrix shows the count. Then the model plays devil's advocate: it argues for a different answer in two sentences, and the teams vote again. Do they hold on to the right answer, or change their minds?
+
+Send the problem to the model as soon as it's on screen. `cache_prompt` keeps it, so when the vote closes, the model only reads the few new tokens of the request. Check `prompt_n` in the server's `timings` to see how many tokens it really read.
+
+**Measure it:** the time from the end of the vote to the argument, and, on 20 problems you judge by hand, how often the argument is about the problem and makes sense.
+
+#### A multilingual bridge
+
+M3Kang has the same problem in many languages, Catalan included, with the same `id`. A student can work in Catalan, and the copilot can use the English version behind the scenes. bge-small is an English embedding model, so search with the English text of the same problem, and show the student the problems you find in their language.
+
+**Measure it:** accuracy and retrieval quality by language, with `eval.py --languages cat` and `--languages eng` on the same problems.
+
+### 13.3 Ideas to reason
+
+Every team's `predict.py` is scored on the hidden test set, whatever else you build. Change one thing at a time, and record each run with `eval.py --name`.
 
 - **Fix the letter bias.** Look at the letter counts in `eval.py`. Ask for the model's log probabilities (`"logprobs": true, "top_logprobs": 5`) and correct for a letter it picks too often.
 - **Ask for the value, not the letter**, or **let it reason** in one line before `Answer: X`. Neither helped on their own in our test (step 11.3), but they may help combined with a better prompt, examples, or a bigger model. Reasoning triples the time per problem.
@@ -1004,29 +1068,140 @@ Change one thing at a time, and record each run with `eval.py --name`.
 - **Retrieve better.** Combine embeddings with keyword search, or only use examples above a similarity score.
 - **Try a different model.** Any GGUF model that fits in RAM, answers in time, and has a license you can use. Update `config.env` with its repository, revision, file, and SHA256.
 
+### 13.4 Choose one
 
----
+Ask these questions about each idea, and pick the one with the most yes answers:
 
-## Step 13: Brainstorm your idea
+- Does it use M3Kang in a way other teams won't?
+- Does it guide the student, without giving the answer away?
+- Does it use the board: the buttons, the LED matrix, working offline?
+- Can you measure it with a number, before and after?
+- Does it fit in 60 seconds per step and 4 GB of RAM? Count the tokens of each prompt.
+- Can you show it working live in 3 minutes?
 
-
----
-
+Then write down, in a few lines: the idea, the number you'll measure, and your first experiment. That's your plan for step 14.
 
 ---
 
 ## Step 14: Implement the idea and prepare the presentation
 
+### 14.1 Work with Claude and the skills in this repository
+
+The [`.skills`](.skills) folder holds skills for Claude: instructions that teach it how this board, this code, and this datathon work, so it gives you commands and code that run on the UNO Q.
+
+| Skill | Use it to |
+| --- | --- |
+| [`unoq-board`](.skills/unoq-board/SKILL.md) | Connect, check the services and the RAM, and fix the board |
+| [`m3kang-copilot`](.skills/m3kang-copilot/SKILL.md) | Change the copilot, run experiments, and analyse the errors |
+| [`unoq-hardware-ui`](.skills/unoq-hardware-ui/SKILL.md) | Build an App Lab app with the LED matrix and the Modulino buttons |
+| [`publish-project`](.skills/publish-project/SKILL.md) | Write your GitHub repository and your Project Hub write-up |
+
+To use them with Claude Code, on your laptop, from your clone of the repository:
+
+```bash
+mkdir -p .claude
+ln -s ../.skills .claude/skills
+```
+
+Claude Code finds them on its own when they fit your request, or you can ask for one by name: "Use the m3kang-copilot skill to add a hint ladder." See [.skills/README.md](.skills/README.md) for other ways to use them.
+
+Claude can help you write code, but you're the ones who decide and measure. Run every change on the board, and check the numbers yourself.
+
+### 14.2 Change one thing at a time, and measure it
+
+1. Make one change, such as a new prompt, a retrieval rule, or a hint step.
+2. Check that `predict.py` still answers one letter per problem:
+
+   ```bash
+   python3 predict.py --input data/sample_problems.jsonl --output results/check.csv
+   ```
+
+3. Measure it with a name you'll recognise:
+
+   ```bash
+   python3 eval.py --limit 50 --name hint-ladder-v1
+   ```
+
+4. Commit it. `results/ablations.csv` records the commit next to each result, so you can always go back to what worked.
+
+Keep the rules from [step 11.1](#111-how-the-baseline-works): one letter per problem, at most 60 seconds, no network, and the same answers every time. Use `--limit 0` for the whole validation set before you report a final number.
+
+### 14.3 Analyse the errors
+
+The error analysis is part of what you publish. `eval.py` already prints accuracy by language, by level, and with or without options. `results/eval-<time>-<name>.csv` has one row per problem, which you can join with `data/val.jsonl` by `id` and `language`.
+
+M3Kang has no topic field, so you'll need to add one: cluster the embeddings, look for keywords, or label 50 problems by hand. Then look at 10 wrong answers one by one, in the [explorer](#optional-explore-the-problems-in-your-browser), and write down why the model got them wrong.
+
+### 14.4 Add the hardware
+
+An App Lab app has two halves: `python/main.py` runs on Linux next to the model servers, and `sketch/sketch.ino` runs on the microcontroller, with the LED matrix and the Modulino nodes. The Bridge connects them. The [`unoq-hardware-ui`](.skills/unoq-hardware-ui/SKILL.md) skill has working patterns.
+
+Check two things early:
+
+- **The app can reach the models.** Call `http://127.0.0.1:8081/health` from `main.py` before you build on it.
+- **There's enough RAM.** App Lab and the model servers share 3.6 GB. Watch `free -m` while everything runs.
+
+### 14.5 Prepare the demo and the pitch
+
+You have 3 minutes, with the board. A structure that works:
+
+| Part | Time | What |
+| --- | --- | --- |
+| The problem | 20 s | Who the copilot helps, and why it runs offline |
+| The demo | 90 s | The copilot working live, on the board |
+| The numbers | 40 s | Accuracy against the 22.5% baseline, latency, and what the error analysis shows |
+| What you learned | 30 s | What didn't work, and what you'd do next |
+
+For the demo:
+
+- **Run it the way the jury will see it:** Wi-Fi off, the services started at boot, and nothing on your laptop doing the work. If you show a web page on your laptop, connect over USB with `adb forward`.
+- **Choose your problems in advance**, and try each one on the board the same day.
+- **Rehearse with a timer**, at least twice.
+- **Record a short video of the demo working**, in case something fails on stage.
+
 ---
 
 ## Step 15: Publish your project
 
+Every team publishes two things: a public GitHub repository with the code, and a step-by-step write-up on Arduino Project Hub. Send both links to the organizers.
 
+### 15.1 A public GitHub repository
 
+Fork this repository, or start a new one, and make it public. It should have:
 
+- **The code**, with everything needed to run your copilot on a fresh UNO Q: `config.env` with the models' repository, revision, file, and SHA256, the service files, and your App Lab app, if you have one.
+- **A README** with:
+  - What your copilot does, with a photo or a short video of it working
+  - The architecture: what runs on Linux, what runs on the microcontroller, and how you use M3Kang
+  - How to replicate it, step by step, from a board set up with steps 0 to 12
+  - Your results: the experiments from `results/ablations.csv`, against the baseline
+  - Your error analysis by topic, language, and difficulty
+  - What didn't work
+  - The team members
+- **A license** for your code, such as MIT.
+
+**Don't publish M3Kang data.** Its license is for research use only. That means no `train.jsonl`, `val.jsonl`, images, or `index.db`, which holds the problem text. `.gitignore` already excludes `data/`, `*.db`, and `*.gguf`. Run `git status` before every push, and link to the [dataset card](https://huggingface.co/datasets/qualcomm/M3Kang) instead.
+
+Before you share the link, clone your repository into a new folder and follow your own README.
+
+### 15.2 A step-by-step on Arduino Project Hub
+
+[Arduino Project Hub](https://projecthub.arduino.cc/) is where the Arduino community shares projects. Sign in with your Arduino account, and create a new project. Use [How to Run High-Performance LLMs Locally on the Arduino UNO Q](https://projecthub.arduino.cc/marc-edgeimpulse/running-local-llms-and-vlms-on-the-arduino-uno-q-with-yzma-74e288) as an example of the format.
+
+A structure that works:
+
+1. **Introduction:** the problem, and a photo or video of your copilot working
+2. **Components and apps:** the Arduino UNO Q 4 GB, any Modulino nodes, App Lab, llama.cpp, and the models
+3. **Architecture:** a diagram of the two halves of the board, the Bridge, the model servers, and where M3Kang comes in
+4. **Step by step:** from a fresh board to your demo, each step with its commands and what you should see. Link to your GitHub repository for the full code.
+5. **Results:** accuracy, latency, and the error analysis
+6. **What we learned**, and what you'd do next
+
+Cite M3Kang (Torres-Camps et al., 2026, [arXiv:2601.16218](https://arxiv.org/abs/2601.16218)), and don't upload its data. If you want to show an example problem, check the license on the dataset card first.
+
+The [`publish-project`](.skills/publish-project/SKILL.md) skill can check your README and your write-up against this list.
 
 ---
-
 
 ## Settings in config.env
 
