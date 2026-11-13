@@ -35,6 +35,7 @@ Take into account that the [Arduino UNO Q board](https://store.arduino.cc/pages/
 * [How to Run High-Performance LLMs Locally on the Arduino UNO Q](https://projecthub.arduino.cc/marc-edgeimpulse/running-local-llms-and-vlms-on-the-arduino-uno-q-with-yzma-74e288)
 * [qualcomm/M3Kang (dataset and paper)](https://huggingface.co/datasets/qualcomm/M3Kang)
 
+---
 
 ### The repository
 
