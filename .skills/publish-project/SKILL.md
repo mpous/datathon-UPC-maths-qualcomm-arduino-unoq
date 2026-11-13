@@ -40,7 +40,7 @@ The code:
 The README, in this order:
 
 1. **What it does**, in two or three sentences, with a photo or a short video of it working on the board
-2. **The architecture**: what runs on Linux, what runs on the microcontroller, how the Bridge connects them, which model servers it calls, and how it uses M3Kang. A diagram helps.
+2. **The architecture**: what runs on Linux, what runs on the microcontroller (the LED matrix), how the Bridge connects them, which model servers it calls, and how it uses M3Kang. A diagram helps.
 3. **How to replicate it**: start from a board set up with steps 0 to 12 of the datathon README, and list every further step, with the commands and what you should see
 4. **Results**: a table from `results/ablations.csv`, each experiment against the baseline (22.5% on 40 English problems with OCR options), with accuracy, mean and worst latency, and the number of problems
 5. **Error analysis** by topic, language, and difficulty (level), with the number of problems next to each accuracy, and a few wrong answers explained
@@ -60,7 +60,7 @@ Sign in at <https://projecthub.arduino.cc/> with an Arduino account, and create 
 Sections:
 
 1. **Introduction:** who the copilot helps, why it runs offline, and a photo or video of it working
-2. **Components and apps:** the Arduino UNO Q 4 GB, any Modulino nodes, Arduino App Lab, llama.cpp, Qwen3.5 0.8B, bge-small-en-v1.5
+2. **Components and apps:** the Arduino UNO Q 4 GB, Arduino App Lab, llama.cpp, Qwen3.5 0.8B, bge-small-en-v1.5
 3. **Architecture:** the diagram from the README, explained
 4. **Step by step:** from a fresh board to the demo. One step per section, each with its commands and what you should see. Link to the GitHub repository for the full code, instead of pasting all of it.
 5. **Results and error analysis**

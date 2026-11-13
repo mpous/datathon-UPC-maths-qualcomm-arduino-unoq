@@ -6,7 +6,7 @@ These skills teach Claude how the Arduino UNO Q, this repository, and the Math o
 | --- | --- |
 | [`unoq-board`](unoq-board/SKILL.md) | Connect to the board, check the model services and the RAM, and fix common problems |
 | [`m3kang-copilot`](m3kang-copilot/SKILL.md) | Change the copilot, run measured experiments, and analyse the errors |
-| [`unoq-hardware-ui`](unoq-hardware-ui/SKILL.md) | Build an App Lab app with the LED matrix and the Modulino buttons, connected to the copilot |
+| [`unoq-hardware-ui`](unoq-hardware-ui/SKILL.md) | Build an App Lab app with a web page and the LED matrix, connected to the copilot |
 | [`publish-project`](publish-project/SKILL.md) | Prepare your public GitHub repository and your Arduino Project Hub write-up |
 
 Each skill is a folder with a `SKILL.md` file: a short description that tells Claude when to use it, then the instructions.
@@ -24,7 +24,7 @@ Start `claude` in the same folder. It loads a skill when your request fits its d
 
 - "Use the unoq-board skill: the language model service doesn't answer."
 - "Use the m3kang-copilot skill to add a hint ladder, and measure it."
-- "Use the unoq-hardware-ui skill: show the chosen letter on the LED matrix, and confirm it with a Modulino button."
+- "Use the unoq-hardware-ui skill: show the student's answer on the LED matrix, with a tick or a cross."
 
 To use them in every project on your laptop, copy the folders to `~/.claude/skills/` instead.
 

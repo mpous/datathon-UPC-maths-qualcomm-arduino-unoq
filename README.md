@@ -1033,7 +1033,7 @@ Rungs 1 and 2 cost less than a second. Only rung 3 uses the model, and a one-sen
 
 #### The adaptive trainer
 
-Build a map of M3Kang: every problem with its embedding, its level, and its topic. The student answers on the board: two Modulino buttons move between A and E on the LED matrix, and the third confirms. The copilot picks the next problem:
+Build a map of M3Kang: every problem with its embedding, its level, and its topic. The student answers A to E on a web page served by the board, and the LED matrix shows a tick or a cross, and the current level. The copilot picks the next problem:
 
 - **Right answer:** a neighbour on the map, one level up
 - **Wrong answer:** a neighbour on the same topic, one level down
@@ -1044,7 +1044,7 @@ There's no language model in the loop, so each step is fast. The student's profi
 
 #### The classroom debate box
 
-One board for the whole class. Teams vote for an answer with the buttons, and the LED matrix shows the count. Then the model plays devil's advocate: it argues for a different answer in two sentences, and the teams vote again. Do they hold on to the right answer, or change their minds?
+One board for the whole class. Teams vote for an answer on a web page served by the board, and the LED matrix shows the count of votes for each letter. Then the model plays devil's advocate: it argues for a different answer in two sentences, and the teams vote again. Do they hold on to the right answer, or change their minds?
 
 Send the problem to the model as soon as it's on screen. `cache_prompt` keeps it, so when the vote closes, the model only reads the few new tokens of the request. Check `prompt_n` in the server's `timings` to see how many tokens it really read.
 
@@ -1074,7 +1074,7 @@ Ask these questions about each idea, and pick the one with the most yes answers:
 
 - Does it use M3Kang in a way other teams won't?
 - Does it guide the student, without giving the answer away?
-- Does it use the board: the buttons, the LED matrix, working offline?
+- Does it use the board: the LED matrix, working offline?
 - Can you measure it with a number, before and after?
 - Does it fit in 60 seconds per step and 4 GB of RAM? Count the tokens of each prompt.
 - Can you show it working live in 3 minutes?
@@ -1093,7 +1093,7 @@ The [`.skills`](.skills) folder holds skills for Claude: instructions that teach
 | --- | --- |
 | [`unoq-board`](.skills/unoq-board/SKILL.md) | Connect, check the services and the RAM, and fix the board |
 | [`m3kang-copilot`](.skills/m3kang-copilot/SKILL.md) | Change the copilot, run experiments, and analyse the errors |
-| [`unoq-hardware-ui`](.skills/unoq-hardware-ui/SKILL.md) | Build an App Lab app with the LED matrix and the Modulino buttons |
+| [`unoq-hardware-ui`](.skills/unoq-hardware-ui/SKILL.md) | Build an App Lab app with a web page and the LED matrix |
 | [`publish-project`](.skills/publish-project/SKILL.md) | Write your GitHub repository and your Project Hub write-up |
 
 To use them with Claude Code, on your laptop, from your clone of the repository:
@@ -1132,9 +1132,11 @@ The error analysis is part of what you publish. `eval.py` already prints accurac
 
 M3Kang has no topic field, so you'll need to add one: cluster the embeddings, look for keywords, or label 50 problems by hand. Then look at 10 wrong answers one by one, in the [explorer](#optional-explore-the-problems-in-your-browser), and write down why the model got them wrong.
 
-### 14.4 Add the hardware
+### 14.4 Add the LED matrix and a web page
 
-An App Lab app has two halves: `python/main.py` runs on Linux next to the model servers, and `sketch/sketch.ino` runs on the microcontroller, with the LED matrix and the Modulino nodes. The Bridge connects them. The [`unoq-hardware-ui`](.skills/unoq-hardware-ui/SKILL.md) skill has working patterns.
+The datathon uses no external modules: the board's 8x13 LED matrix is the only hardware you add. Students answer on a web page, and the board answers on the matrix: a letter, a tick or a cross, a level, or vote counts.
+
+An App Lab app has two halves: `python/main.py` runs on Linux next to the model servers, and serves the web page with the `web_ui` brick. `sketch/sketch.ino` runs on the microcontroller and draws on the LED matrix. The Bridge connects them. The [`unoq-hardware-ui`](.skills/unoq-hardware-ui/SKILL.md) skill has a complete starting app.
 
 Check two things early:
 
@@ -1191,7 +1193,7 @@ Before you share the link, clone your repository into a new folder and follow yo
 A structure that works:
 
 1. **Introduction:** the problem, and a photo or video of your copilot working
-2. **Components and apps:** the Arduino UNO Q 4 GB, any Modulino nodes, App Lab, llama.cpp, and the models
+2. **Components and apps:** the Arduino UNO Q 4 GB, App Lab, llama.cpp, and the models
 3. **Architecture:** a diagram of the two halves of the board, the Bridge, the model servers, and where M3Kang comes in
 4. **Step by step:** from a fresh board to your demo, each step with its commands and what you should see. Link to your GitHub repository for the full code.
 5. **Results:** accuracy, latency, and the error analysis
