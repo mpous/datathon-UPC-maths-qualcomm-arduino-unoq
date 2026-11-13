@@ -1,5 +1,7 @@
 # Math on the Edge: the minimum kit for the Arduino UNO Q
 
+<img width="1526" height="927" alt="UPC-datathon" src="https://github.com/user-attachments/assets/daa7be34-b91a-4703-9581-7b5142f75d91" />
+
 This repository sets up what every team must run on the Arduino UNO Q (4 GB) before the datathon starts: a small language model that answers M3Kang math problems offline, an embedding model for retrieval, and the scripts to measure, test, and freeze your submission.
 
 Follow the steps in order. Each one ends with a check, so you know it worked before you move on.
