@@ -1,6 +1,43 @@
-# Math on the Edge: the minimum kit for the Arduino UNO Q
+# Datathon FME 2026: Qualcomm challenge
 
 <img width="1526" height="927" alt="UPC-datathon" src="https://github.com/user-attachments/assets/daa7be34-b91a-4703-9581-7b5142f75d91" />
+
+## Math on the Edge: Build a Math Copilot with Arduino and M3Kang
+
+### The challenge
+
+Mathematical proficiency in Catalonia is declining in international assessments such as PISA. Teachers are stretched, and many students feel left behind by one-size-fits-all classrooms. AI can help, but only if it guides reasoning instead of doing the homework, and only if student data stays private.
+
+[M3Kang](https://huggingface.co/datasets/qualcomm/M3Kang) is a multilingual dataset of thousands of problems from the [Kangaroo Math Competition](https://mathkangaroo.org/mks/), across many languages and difficulty levels. It is a perfect raw material for a learning companion: a bank of problems to practise with, a library of examples to retrieve from, a map of mathematical topics and a benchmark to measure against.
+
+The Arduino UNO Q (4 GB) has two brains on one board: a Linux on a quad-core Arm CPU, the Qualcomm QRB2210, which can run small language models, embedding models and retrieval offline. And a real-time microcontroller that drives LEDs, buttons, motion sensors and cameras. Nothing leaves the device.
+
+The challenge of the Datathon FME 2026 is:
+
+> Design and build a Math copilot that runs entirely on the Arduino UNO Q and uses M3Kang in an innovative way to help students learn to reason mathematically.
+
+Your copilot must do one of these two things:
+
+* **Teach**: It must turn that ability into an experience that sparks curiosity and guides the student without giving away the answer, for example through hints, adaptive practice, error analysis, physical interaction or collaboration.
+* **Reason**: When given a Kangaroo-style problem, it must be able to choose the correct answer. Organizers will measure this objectively on a hidden test set.
+
+How you use M3Kang is up to you. It can be a retrieval knowledge base, a training set, a source of problem embeddings, a difficulty map, a multilingual bridge, or something nobody has thought of yet. The most original uses will score highest.
+
+Take into account that the [Arduino UNO Q board](https://store.arduino.cc/pages/uno-q) is slow for this type of work, but it's capable. It only reads about 11 tokens per second and writes about 5 tokens per second. Every word you put into a prompt costs time. Retrieval and embeddings cost a fraction of a second, but generation costs tens of seconds. Great solutions measure these trade-offs and design around them.
+
+#### Deliverables
+
+* The project and source code documented in an open Github repository and at the [Arduino Project Hub](https://projecthub.arduino.cc/) with the architecture, experiences, how to replicate the project, error analysis by topic, language and difficulty
+* A live demo and a 3-minute pitch on the board
+ 
+#### References:
+* [Generative AI at the Edge with the UNO Q and its RAG](https://mjrovai.github.io/genai-uno-q/content/rag/rag.html) at the Edge chapter (Marcelo Rovai)
+Running local LLMs on the Arduino UNO Q board: a practical guide (Arduino Blog)
+[How to Run High-Performance LLMs Locally on the Arduino UNO Q](https://projecthub.arduino.cc/marc-edgeimpulse/running-local-llms-and-vlms-on-the-arduino-uno-q-with-yzma-74e288)
+[qualcomm/M3Kang (dataset and paper)](https://huggingface.co/datasets/qualcomm/M3Kang)
+
+
+### The repository
 
 This repository sets up what every team must run on the Arduino UNO Q (4 GB) before the datathon starts: a small language model that answers M3Kang math problems offline, an embedding model for retrieval, and the scripts to measure, test, and freeze your submission.
 
