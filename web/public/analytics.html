@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Model Analytics</title>
+  <style>
+    :root { --ink:#1d2433; --muted:#5c667a; --line:#dfe3ea; --bg:#f5f7fa; --card:#fff; --accent:#1f5fbf; }
+    * { box-sizing:border-box; } body { margin:0; font:15px/1.5 system-ui,sans-serif; color:var(--ink); background:var(--bg); }
+    header { padding:22px 20px; background:#fff; border-bottom:1px solid var(--line); } header div,main { max-width:1200px; margin:auto; }
+    .site-nav { display:flex; flex-wrap:wrap; gap:8px; margin-top:16px; } .site-nav a { display:inline-flex; align-items:center; gap:7px; padding:8px 13px; border:1px solid var(--line); border-radius:7px; color:var(--ink); background:#fff; text-decoration:none; font-weight:600; transition:.2s; }
+    .site-nav a:hover,.site-nav a.active { color:#fff; background:var(--accent); border-color:var(--accent); box-shadow:0 3px 8px #1f5fbf33; }
+    main { padding:24px 20px; } section { background:#fff; border:1px solid var(--line); border-radius:8px; padding:18px; margin-bottom:18px; }
+    input { padding:8px; border:1px solid var(--line); border-radius:6px; } .metrics { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:12px; margin-top:16px; }
+    .metric { padding:14px; background:var(--bg); border-radius:6px; } .metric b,.metric span { display:block; } .metric span { color:var(--muted); font-size:13px; } .metric b { font-size:22px; }
+    table { width:100%; border-collapse:collapse; margin-top:14px; } th,td { text-align:left; padding:8px; border-bottom:1px solid var(--line); } th { color:var(--muted); }
+    .error { color:#b3261e; } @media (max-width:700px) { table { font-size:12px; } }
+  </style>
+</head>
+<body>
+  <header><div><h1>📊 Model Analytics</h1><nav class="site-nav"><a href="/">🏠 Home</a><a class="active" href="/analytics">📊 Analytics</a><a href="/uploader">🧩 Exercise Explorer</a></nav></div></header>
+  <main><section><h2>1. Evaluation Dataset</h2><p>Upload an evaluation CSV or use the included sample data.</p><input id="csv" type="file" accept=".csv"><p id="status">Using sample evaluation data.</p></section>
+    <section><h2>Execution Summary and Global Metrics</h2><div id="metrics" class="metrics"></div><table><thead><tr><th>ID</th><th>Language</th><th>Level</th><th>Label</th><th>Answer</th><th>Status</th></tr></thead><tbody id="rows"></tbody></table></section>
+  </main>
+  <script>
+    const sample=`id,language,level,has_options,label,answer,correct,seconds,status,prompt_tokens\nlvl-0_2016_8,eng,0,False,C,D,0,2.12,error: connection,0\nlvl-0_2015_17,eng,0,True,D,D,1,2.03,ok,0\nlvl-0_2016_20,eng,0,True,C,D,0,2.04,error: connection,0`;
+    const $=id=>document.getElementById(id);
+    function parse(text){const lines=text.trim().split(/\r?\n/), headers=lines.shift().split(",");return lines.map(line=>{const values=line.split(",");return Object.fromEntries(headers.map((h,i)=>[h,values[i]||""]));});}
+    function render(data){const valid=data.filter(r=>"ABCDE".includes((r.answer||"").toUpperCase())&&"ABCDE".includes((r.label||"").toUpperCase())), correct=valid.filter(r=>r.label.toUpperCase()===r.answer.toUpperCase()), errors=data.filter(r=>(r.status||"").toLowerCase().includes("error")), latency=data.map(r=>Number(r.seconds)).filter(Number.isFinite);
+      $("metrics").innerHTML=[["Evaluated samples",data.length],["Valid answers (A-E)",valid.length],["Accuracy",valid.length?(correct.length/valid.length*100).toFixed(1)+"%":"-"],["Mean latency",latency.length?(latency.reduce((a,b)=>a+b,0)/latency.length).toFixed(2)+" s":"-"],["Execution errors",errors.length]].map(x=>`<div class="metric"><span>${x[0]}</span><b>${x[1]}</b></div>`).join("");
+      $("rows").innerHTML=data.map(r=>`<tr><td>${r.id}</td><td>${r.language}</td><td>${r.level}</td><td>${r.label}</td><td>${r.answer}</td><td>${r.status}</td></tr>`).join("");
+    }
+    render(parse(sample)); $("csv").addEventListener("change",async e=>{const file=e.target.files[0];if(!file)return;try{render(parse(await file.text()));$("status").textContent=file.name;}catch(error){$("status").textContent=error.message;$("status").className="error";}});
+  </script>
+</body>
+</html>

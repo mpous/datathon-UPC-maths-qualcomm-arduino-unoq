@@ -41,7 +41,8 @@ def predict_answer(image_bytes: bytes) -> Any | None:
 
 
 def generate_explanation(
-    image_bytes: bytes, prediction: str
+    image_bytes: bytes, 
+    prediction: str
 ) -> Any | None:
     """Generates a step-by-step explanation for the predicted answer.
 

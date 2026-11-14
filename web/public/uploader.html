@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>M3Kang explorer</title>
+  <style>
+    :root { --ink:#1d2433; --muted:#5c667a; --line:#dfe3ea; --bg:#f5f7fa; --card:#fff; --ok:#1b7f3b; --bad:#b3261e; --accent:#1f5fbf; }
+    * { box-sizing:border-box; } body { margin:0; font:15px/1.5 system-ui,sans-serif; color:var(--ink); background:var(--bg); }
+    header { padding:22px 20px; background:var(--card); border-bottom:1px solid var(--line); }
+    .header-inner { max-width:1200px; margin:auto; display:flex; flex-wrap:wrap; gap:10px; align-items:center; }
+    h1 { font-size:18px; width:100%; margin:0; } .pill { font-size:12px; padding:2px 10px; border-radius:999px; background:var(--bg); border:1px solid var(--line); color:var(--muted); }
+    nav.site-nav { display:flex; flex-wrap:wrap; gap:8px; width:100%; margin:6px 0 4px; }
+    .site-nav a { display:inline-flex; align-items:center; gap:7px; padding:7px 12px; border:1px solid var(--line); border-radius:7px; color:var(--ink); background:#fff; text-decoration:none; font-weight:600; transition:.2s; }
+    .site-nav a:hover,.site-nav a.active { color:#fff; background:var(--accent); border-color:var(--accent); box-shadow:0 3px 8px #1f5fbf33; }
+    .score { margin-left:auto; font-weight:600; } main { display:grid; grid-template-columns:260px 1fr; gap:20px; padding:20px; max-width:1400px; margin:auto; }
+    aside, section { background:var(--card); border:1px solid var(--line); border-radius:8px; } aside { padding:12px; height:calc(100vh - 110px); position:sticky; top:20px; display:flex; flex-direction:column; gap:8px; }
+    aside label { font-size:13px; color:var(--muted); } select, button { font:inherit; } select { padding:4px 6px; border:1px solid var(--line); border-radius:6px; background:#fff; }
+    #list { overflow-y:auto; flex:1; border-top:1px solid var(--line); margin-top:4px; } #list div { padding:5px 6px; cursor:pointer; font-size:13px; border-radius:4px; display:flex; justify-content:space-between; }
+    #list div:hover, #list div.on { background:#e8f0fe; } #list div.on { font-weight:600; } .mark { width:34px; text-align:right; }
+    .col { display:flex; flex-direction:column; gap:20px; min-width:0; } section { padding:16px 20px; } section h2 { font-size:15px; margin:0 0 10px; }
+    .meta, .hint { color:var(--muted); font-size:13px; } .problem-img { max-width:100%; border:1px solid var(--line); border-radius:6px; }
+    .text { white-space:pre-wrap; margin:12px 0; } .ocr { font-size:13px; color:var(--muted); } .ocr b { color:var(--ink); }
+    .letters { display:flex; gap:10px; margin:8px 0; } .letters button { width:56px; height:48px; font-size:20px; font-weight:700; border:2px solid var(--line); border-radius:8px; background:#fff; cursor:pointer; }
+    .letters button:hover:not(:disabled) { border-color:var(--accent); } .letters button.right { background:#e6f4ea; border-color:var(--ok); color:var(--ok); }
+    .letters button.wrong { background:#fce8e6; border-color:var(--bad); color:var(--bad); } .letters button.model { outline:3px dashed var(--accent); outline-offset:2px; }
+    .verdict { font-weight:600; min-height:1.5em; } .ok { color:var(--ok); } .bad { color:var(--bad); }
+    .row { display:flex; flex-wrap:wrap; gap:14px; align-items:center; } .primary, .secondary { padding:8px 16px; border-radius:6px; cursor:pointer; }
+    .primary { border:0; background:var(--accent); color:#fff; font-weight:600; } .primary:disabled { opacity:.5; cursor:default; }
+    .secondary { border:1px solid var(--line); background:#fff; } table { border-collapse:collapse; margin-top:10px; font-size:14px; } td { padding:3px 14px 3px 0; } td:first-child { color:var(--muted); }
+    details { margin-top:10px; } summary { cursor:pointer; color:var(--accent); } pre { white-space:pre-wrap; background:var(--bg); padding:10px; border-radius:6px; max-height:360px; overflow:auto; }
+    @media (max-width:800px) { main { grid-template-columns:1fr; } aside { position:static; height:300px; } }
+  </style>
+</head>
+<body>
+  <header><div class="header-inner"><h1>M3Kang explorer</h1><nav class="site-nav"><a href="/">🏠 Home</a><a href="/analytics">📊 Analytics</a><a class="active" href="/uploader">🧩 Exercise Explorer</a></nav><span class="pill">local mode</span><span id="s-data" class="pill"></span><span class="score" id="score">You 0/0 · Model 0/0</span></div></header>
+  <main>
+    <aside>
+      <label>Language <select id="f-lang"><option value="">all</option></select></label>
+      <label>Level <select id="f-level"><option value="">all</option></select></label>
+      <label><input type="checkbox" id="f-options"> Only problems with options</label>
+      <button class="secondary" id="random">Random problem</button>
+      <div id="list"></div>
+    </aside>
+    <div class="col">
+      <section><div class="meta" id="meta">Loading...</div><img id="img" class="problem-img" alt=""><div class="text" id="text"></div><div class="ocr" id="ocr"></div></section>
+      <section><h2>1. Your answer</h2><div class="letters" id="mine"></div><div id="my-verdict" class="verdict"></div></section>
+      <section><h2>2. Ask the model</h2><div class="row"><button class="primary" id="ask">Ask the model</button><span class="hint">Local fallback: no language model configured.</span></div><div id="model"></div></section>
+      <section><h2>3. Similar solved problems</h2><div class="hint">Retrieval is not configured in local mode.</div></section>
+      <section class="row"><button class="primary" id="next">Next problem</button><span class="hint">Keys: A-E answer · M ask · N next · R random</span></section>
+    </div>
+  </main>
+  <script>
+    const $ = id => document.getElementById(id);
+    const api = async (url, body) => {
+      const response = await fetch(url, body ? {method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify(body)} : {});
+      const data = await response.json(); if (!response.ok) throw new Error(data.error || response.statusText); return data;
+    };
+    const esc = value => String(value).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+    let all = [], shown = [], current = null, myChoice = null, info;
+    const results = {};
+    function score() { const values = Object.values(results), me = values.filter(r => "me" in r), model = values.filter(r => "model" in r); $("score").textContent = `You ${me.filter(r=>r.me).length}/${me.length} · Model ${model.filter(r=>r.model).length}/${model.length}`; }
+    function renderList() {
+      const lang=$("f-lang").value, level=$("f-level").value, opts=$("f-options").checked;
+      shown=all.filter(p => (!lang||p.language===lang)&&(level===""||String(p.level)===level)&&(!opts||p.options));
+      $("list").innerHTML=shown.map(p => { const r=results[p.key]||{}, mark=("me" in r?(r.me?"✓":"✗"):"")+("model" in r?(r.model?" ✓":" ✗"):""); return `<div data-key="${esc(p.key)}" class="${current&&p.key===current.key?"on":""}"><span>L${p.level} · ${esc(p.id)} · ${esc(p.language)}</span><span class="mark">${mark}</span></div>`; }).join("");
+    }
+    async function openProblem(key) {
+      current=await api("/api/problem?key="+encodeURIComponent(key)); myChoice=null;
+      $("meta").textContent=`${current.id} · ${current.language} · level ${current.level}`;
+      $("img").style.display=current.image?"":"none"; if(current.image) $("img").src="/image/"+encodeURIComponent(current.key);
+      $("text").textContent=current.text; const options=current.options||{};
+      $("ocr").innerHTML=Object.keys(options).length?"Options: "+"ABCDE".split("").map(l=>`<b>${l})</b> ${esc(options[l])}`).join(" &nbsp; "):"No options available.";
+      $("mine").innerHTML="ABCDE".split("").map(l=>`<button data-l="${l}">${l}</button>`).join("");
+      $("my-verdict").textContent=""; $("my-verdict").className="verdict"; $("model").innerHTML=""; renderList();
+    }
+    async function answer(letter) {
+      if(!current||myChoice)return; myChoice=letter; const r=await api("/api/check",{key:current.key,choice:letter});
+      (results[current.key] ||= {}).me=r.correct; document.querySelectorAll("#mine button").forEach(b=>{b.disabled=true;if(b.dataset.l===r.label)b.classList.add("right");else if(b.dataset.l===letter)b.classList.add("wrong");});
+      $("my-verdict").textContent=r.correct?"Correct!":`Not this time: the answer is ${r.label}.`; $("my-verdict").className="verdict "+(r.correct?"ok":"bad"); score(); renderList();
+    }
+    async function ask() {
+      if(!current)return; $("ask").disabled=true;
+      try { const r=await api("/api/ask",{key:current.key}); (results[current.key] ||= {}).model=r.correct;
+        document.querySelectorAll("#mine button").forEach(b=>b.classList.toggle("model",b.dataset.l===r.answer));
+        $("model").innerHTML=`<div class="verdict ${r.correct?"ok":"bad"}">The model says ${esc(r.answer)}: ${r.correct?"correct":"wrong, the answer is "+esc(r.label)}.</div><table><tr><td>Status</td><td>${esc(r.status)}</td></tr><tr><td>Time</td><td>${r.seconds} s</td></tr></table><details><summary>Prompt</summary><pre>${esc(r.prompt)}</pre></details>`;
+        score(); renderList();
+      } catch(error) { $("model").innerHTML=`<div class="verdict bad">${esc(error.message)}</div>`; } finally { $("ask").disabled=false; }
+    }
+    function next(random) { if(!shown.length)return; const i=shown.findIndex(p=>current&&p.key===current.key), j=random?Math.floor(Math.random()*shown.length):(i+1)%shown.length; openProblem(shown[j].key); }
+    async function main() {
+      info=await api("/api/info"); $("s-data").textContent=`${info.count} problems · ${info.images} images`;
+      info.languages.forEach(l=>$("f-lang").insertAdjacentHTML("beforeend",`<option>${esc(l)}</option>`)); info.levels.forEach(l=>$("f-level").insertAdjacentHTML("beforeend",`<option>${l}</option>`));
+      all=await api("/api/problems"); renderList(); if(shown.length)openProblem(shown[0].key);
+    }
+    $("list").addEventListener("click",e=>{const row=e.target.closest("[data-key]");if(row)openProblem(row.dataset.key);}); $("mine").addEventListener("click",e=>{if(e.target.dataset.l)answer(e.target.dataset.l);});
+    ["f-lang","f-level","f-options"].forEach(id=>$(id).addEventListener("change",renderList)); $("ask").addEventListener("click",ask); $("next").addEventListener("click",()=>next(false)); $("random").addEventListener("click",()=>next(true));
+    document.addEventListener("keydown",e=>{if(["SELECT","INPUT"].includes(e.target.tagName)||e.ctrlKey||e.metaKey||e.altKey)return;const k=e.key.toUpperCase();if("ABCDE".includes(k))answer(k);else if(k==="M")ask();else if(k==="N")next(false);else if(k==="R")next(true);});
+    main().catch(error=>{$("text").textContent=error.message;});
+  </script>
+</body>
+</html>

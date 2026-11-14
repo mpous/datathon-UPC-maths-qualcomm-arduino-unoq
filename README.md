@@ -2,6 +2,28 @@
 
 <img width="1526" height="927" alt="UPC-datathon" src="https://github.com/user-attachments/assets/daa7be34-b91a-4703-9581-7b5142f75d91" />
 
+## Node.js web application
+
+The Node.js web client in [`web/`](C:/Users/34615/Desktop/datathon-fme-2026/qualcomm/web)
+keeps the three original pages: home, analytics and uploader. The uploader is
+now the explorer workflow: problem list, language/level filters, answer
+buttons, score tracking, model prompt inspection and keyboard shortcuts.
+It reads `data/val.jsonl` automatically when available, falls back to
+`data/train.jsonl`, and finally uses
+[`data/sample_problems.jsonl`](C:/Users/34615/Desktop/datathon-fme-2026/qualcomm/data/sample_problems.jsonl).
+It works without a backend or model server. The local model fallback answers
+`D`, matching the current Python fallback.
+
+From the repository root, run:
+
+```powershell
+cd web
+npm start
+```
+
+Open <http://127.0.0.1:3000>. The pages are `/`, `/analytics` and `/uploader`.
+`PORT` can be used to change the Node.js port.
+
 ## Math on the Edge: Build a Math Copilot with Arduino and M3Kang
 
 ### The challenge
