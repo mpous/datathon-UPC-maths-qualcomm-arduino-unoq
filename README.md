@@ -765,9 +765,22 @@ Better option reading is one of the easiest ways to improve your score. Look at 
 One problem per line in `data/train.jsonl` and `data/val.jsonl`:
 
 ```json
-{"id": "lvl-0_2015_13", "language": "eng", "level": 0, "year": 2015, "text_only": true,
- "text": "13. For 3 days, the cat Joy has been catching mice. ...",
- "options": {"A": "12", "B": "15", "C": "18", "D": "20", "E": "24"}, "label": "C"}
+{
+  "id": "lvl-0_2015_13", 
+  "language": "eng", 
+  "level": 0, 
+  "year": 2015, 
+  "text_only": true,
+  "text": "13. For 3 days, the cat Joy has been catching mice. ...",
+  "options": {
+    "A": "12", 
+    "B": "15", 
+    "C": "18", 
+    "D": "20", 
+    "E": "24"
+  }, 
+  "label": "C"
+}
 ```
 
 **Don't commit these files, or share them outside the datathon.** M3Kang is licensed for research use only. `.gitignore` already excludes them.
