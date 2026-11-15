@@ -790,7 +790,7 @@ function handleApi(request, response) {
     }).catch((error) => sendJson(response, 400, { error: error.message }));
   }
 
-  // Solver endpoint: solve an existing problem from VALIDATION_DATA
+  // Agent endpoint: solve an existing problem from VALIDATION_DATA
   if (request.method === "POST" && url.pathname === "/api/ask") {
     return readJson(request).then(async (body) => {
       const entry = byKey.get(body.key);
@@ -1092,9 +1092,9 @@ function serveStatic(request, response) {
     "/": "/index.html",
     "/analytics": "/analytics.html",
     "/analytics.html": "/analytics.html",
-    "/solver": "/solver.html",
-    "/solver.html": "/solver.html",
-    "/solver.py": "/solver.html",
+    "/agent": "/agent.html",
+    "/agent.html": "/agent.html",
+    "/agent.py": "/agent.html",
     "/uploader": "/uploader.html",
     "/uploader.html": "/uploader.html",
     "/uploader.py": "/uploader.html",
