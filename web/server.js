@@ -2,15 +2,20 @@ const http = require("node:http");
 const fs = require("node:fs");
 const path = require("node:path");
 
+const VALIDATION_DATA = "val.jsonl";
+const TRAIN_DATA = "val.jsonl";
+const TEST_DATA = "";
+const SAMPLE_PROBLEMS = "sample_problems.jsonl";
+
 const PORT = Number(process.env.PORT || 3000);
 const PUBLIC_DIR = path.join(__dirname, "public");
 const PROJECT_DIR = path.resolve(__dirname, "..");
 const DATA_FILE = process.env.M3KANG_INPUT
   ? path.resolve(process.env.M3KANG_INPUT)
   : [
-      path.join(PROJECT_DIR, "data", "val.jsonl"),
-      path.join(PROJECT_DIR, "data", "train.jsonl"),
-      path.join(PROJECT_DIR, "data", "sample_problems.jsonl"),
+      path.join(PROJECT_DIR, "data", VALIDATION_DATA),
+      path.join(PROJECT_DIR, "data", TRAIN_DATA),
+      path.join(PROJECT_DIR, "data", SAMPLE_PROBLEMS),
     ].find((file) => fs.existsSync(file));
 const IMAGE_DIR = process.env.M3KANG_IMAGES
   ? path.resolve(process.env.M3KANG_IMAGES)

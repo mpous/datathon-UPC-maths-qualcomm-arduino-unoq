@@ -1,0 +1,24 @@
+0.00.020.689 I srv  llama_server: initializing ...
+0.00.025.072 I cmn  common_param: common_params_print_info: verbosity = 3 (adjust with the `-lv N` CLI arg)
+0.00.034.406 W srv  server_setup: security: no API key is set and CORS allows all origins (see https://github.com/ggml-org/llama.cpp/pull/25655)
+0.00.068.013 I srv    load_model: loading model '..\\models\Qwen_Qwen3.5-0.8B-Q8_0.gguf'
+0.02.022.933 W model has unused tensor blk.24.attn_norm.weight (size = 4096 bytes) -- ignoring
+0.02.022.960 W model has unused tensor blk.24.post_attention_norm.weight (size = 4096 bytes) -- ignoring
+0.02.023.027 W model has unused tensor blk.24.attn_q.weight (size = 4456448 bytes) -- ignoring
+0.02.023.069 W model has unused tensor blk.24.attn_k.weight (size = 557056 bytes) -- ignoring
+0.02.023.082 W model has unused tensor blk.24.attn_v.weight (size = 557056 bytes) -- ignoring
+0.02.023.123 W model has unused tensor blk.24.attn_output.weight (size = 2228224 bytes) -- ignoring
+0.02.023.139 W model has unused tensor blk.24.attn_q_norm.weight (size = 1024 bytes) -- ignoring
+0.02.023.151 W model has unused tensor blk.24.attn_k_norm.weight (size = 1024 bytes) -- ignoring
+0.02.023.162 W model has unused tensor blk.24.ffn_gate.weight (size = 3899392 bytes) -- ignoring
+0.02.023.180 W model has unused tensor blk.24.ffn_down.weight (size = 3899392 bytes) -- ignoring
+0.02.023.191 W model has unused tensor blk.24.ffn_up.weight (size = 3899392 bytes) -- ignoring
+0.02.023.204 W model has unused tensor blk.24.nextn.eh_proj.weight (size = 2228224 bytes) -- ignoring
+0.02.023.219 W model has unused tensor blk.24.nextn.enorm.weight (size = 4096 bytes) -- ignoring
+0.02.023.232 W model has unused tensor blk.24.nextn.hnorm.weight (size = 4096 bytes) -- ignoring
+0.02.023.273 W model has unused tensor blk.24.nextn.shared_head_norm.weight (size = 4096 bytes) -- ignoring
+0.03.229.176 I cmn          init: llama threadpool init, n_threads = 4
+0.08.014.216 I srv    load_model: initializing, n_slots = 1, n_ctx_slot = 4096, kv_unified = 'false'
+0.08.014.651 W srv          init: --cache-idle-slots requires --cache-ram, disabling
+0.08.033.282 I srv  server_run_i: model loaded
+0.08.033.303 I srv  server_on_li: listening on http://127.0.0.1:18084

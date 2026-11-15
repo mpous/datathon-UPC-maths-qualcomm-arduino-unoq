@@ -1,9 +1,9 @@
 """Read config.env, the settings file shared with the board scripts."""
 import os
 import shlex
+from pathlib import Path
 
-ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-
+ROOT = Path(__file__).parent.parent.parent
 
 def load(path=os.path.join(ROOT, "config.env")):
     values = {}
