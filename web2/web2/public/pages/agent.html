@@ -1,0 +1,55 @@
+<div class="page page-agent">
+  <div class="page-tools">
+    <span class="pill">local mode</span>
+    <span class="pill" id="s-data"></span>
+    <span class="score" id="score">You 0/0 · Model 0/0</span>
+  </div>
+
+  <div class="agent-layout">
+    <aside class="agent-side">
+      <section class="panel">
+        <div class="filters">
+          <label>Language <select id="f-lang"><option value="">all</option></select></label>
+          <label>Level <select id="f-level"><option value="">all</option></select></label>
+          <label class="check"><input type="checkbox" id="f-options"> Only problems with options</label>
+          <button class="secondary" id="random">Random problem</button>
+        </div>
+        <div id="list" class="problem-list"></div>
+      </section>
+
+      <section class="panel agent-next">
+        <button class="primary" id="next">Next problem</button>
+        <span class="hint">Keys: A-E answer · M ask · N next · R random</span>
+      </section>
+    </aside>
+
+    <div class="agent-main">
+      <section class="panel">
+        <div class="meta" id="meta">Loading...</div>
+        <img id="img" class="problem-img" alt="Problem illustration">
+        <div class="text" id="text"></div>
+        <div class="ocr" id="ocr"></div>
+      </section>
+
+      <section class="panel">
+        <h2>1. Your answer</h2>
+        <div class="letters" id="mine"></div>
+        <div id="my-verdict" class="verdict"></div>
+      </section>
+
+      <section class="panel">
+        <h2>2. Ask the model</h2>
+        <div class="row">
+          <button class="primary" id="ask">Ask the model</button>
+          <span class="hint">Local fallback: no language model configured.</span>
+        </div>
+        <div id="model"></div>
+      </section>
+
+      <section class="panel">
+        <h2>3. Similar solved problems</h2>
+        <div class="hint">Retrieval is not configured in local mode.</div>
+      </section>
+    </div>
+  </div>
+</div>

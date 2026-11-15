@@ -1,0 +1,374 @@
+/* Shared shell for the TIC'S FRIEND web app: tokens, header, footer and the
+   common page layout. Every route loads this file once, so all sections share
+   the same width and the header stays a single horizontal bar. */
+:root {
+  --ink: #16302f;
+  --muted: #5b7074;
+  --line: #d9e9ea;
+  --bg: #f6fbfb;
+  --card: #fff;
+  --accent: #42a9af;
+  --accent-strong: #2f8b91;
+  --accent-ink: #267276;
+  --accent-soft: #e6f5f6;
+  --ok: #1b7f3b;
+  --bad: #b3261e;
+  --shell: 1200px;
+  --radius: 8px;
+  --shadow: 0 1px 2px rgba(16, 24, 40, .06);
+  --header-h: 62px;
+}
+
+*,
+*::before,
+*::after { box-sizing: border-box; }
+
+html { height: 100%; }
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  font: 15px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif;
+  color: var(--ink);
+  background: var(--bg);
+}
+
+a { color: var(--accent); }
+
+/* ---------- Header: brand and navigation share one horizontal bar ---------- */
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  flex: 0 0 auto;
+  background: var(--card);
+  border-top: 3px solid var(--accent);
+  border-bottom: 1px solid var(--line);
+  box-shadow: var(--shadow);
+}
+
+.site-header-inner {
+  max-width: var(--shell);
+  margin: 0 auto;
+  padding: 0 20px;
+  min-height: var(--header-h);
+  display: flex;
+  align-items: center;
+  gap: 28px;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-width: 0;
+  color: inherit;
+  text-decoration: none;
+}
+
+.brand-title {
+  display: block;
+  font-size: 24px;
+  line-height: 1;
+  font-weight: 800;
+  letter-spacing: .04em;
+  white-space: nowrap;
+}
+
+.brand-title span { color: var(--accent); }
+
+.brand-subtitle {
+  display: block;
+  padding-left: 14px;
+  border-left: 1px solid var(--line);
+  font-size: 12.5px;
+  line-height: 1.35;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.brand:focus-visible {
+  outline: 3px solid var(--accent-soft);
+  outline-offset: 4px;
+  border-radius: 4px;
+}
+
+.site-nav {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  margin-left: auto;
+}
+
+.site-nav a {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  height: var(--header-h);
+  padding: 0 12px;
+  color: var(--muted);
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1;
+  text-decoration: none;
+  transition: background .15s, color .15s;
+}
+
+.site-nav a:hover {
+  background: var(--accent-soft);
+  color: var(--accent-ink);
+}
+
+.site-nav a.active,
+.site-nav a[aria-current="page"] {
+  background: transparent;
+  color: var(--accent-ink);
+}
+
+/* The active route is marked with a bar that sits on the header rule. */
+.site-nav a.active::after,
+.site-nav a[aria-current="page"]::after {
+  content: "";
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  bottom: 0;
+  height: 3px;
+  border-radius: 2px 2px 0 0;
+  background: var(--accent);
+}
+
+.site-nav a:focus-visible {
+  outline: 3px solid var(--accent-soft);
+  outline-offset: -3px;
+}
+
+/* ---------- Main area grows to push the footer down ---------- */
+.site-main {
+  flex: 1 0 auto;
+  width: 100%;
+}
+
+.site-main:focus { outline: none; }
+
+/* One container for every route: all page bodies have the same width. */
+.page {
+  width: 100%;
+  max-width: var(--shell);
+  margin: 0 auto;
+  padding: 28px 20px 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.page > * { min-width: 0; }
+
+.panel {
+  width: 100%;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 20px 22px;
+  box-shadow: var(--shadow);
+}
+
+.panel h2,
+.panel h3 {
+  margin: 0 0 10px;
+  font-size: 18px;
+}
+
+.panel p { margin: 0 0 14px; color: var(--muted); }
+.panel p:last-child { margin-bottom: 0; }
+
+.grid-2 {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 18px;
+}
+
+.grid-2 > .panel { height: 100%; }
+
+.button,
+a.button {
+  display: inline-block;
+  padding: 9px 16px;
+  border: 0;
+  border-radius: 6px;
+  background: var(--accent);
+  color: #fff;
+  font: inherit;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.button:hover,
+a.button:hover { background: var(--accent-strong); }
+
+/* Subtle feedback while the router fetches the next fragment. */
+body.is-navigating { cursor: progress; }
+
+body.is-navigating #app {
+  opacity: .5;
+  transition: opacity .12s ease;
+}
+
+/* ---------- Footer: sits at the bottom of the page ---------- */
+.site-footer {
+  flex: 0 0 auto;
+  background: var(--card);
+  border-top: 2px solid var(--accent);
+}
+
+.site-footer-inner {
+  max-width: var(--shell);
+  margin: 0 auto;
+  padding: 10px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  font-size: 12.5px;
+  color: var(--muted);
+}
+
+.footer-about {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.footer-label {
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--accent-ink);
+}
+
+.footer-team {
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: .03em;
+  color: var(--ink);
+}
+
+.footer-people {
+  margin: 2px 0 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--muted);
+}
+
+/* Logos: a 2-row grid with the TIC'S FRIENDS mark enlarged in the middle. */
+.footer-logos {
+  display: grid;
+  flex: 0 0 auto;
+  grid-template-columns: auto auto auto;
+  grid-template-rows: auto auto;
+  align-items: center;
+  justify-items: center;
+  gap: 8px 26px;
+}
+
+.footer-logos img {
+  display: block;
+  width: auto;
+  height: 28px;
+  max-width: 130px;
+  object-fit: contain;
+}
+
+.footer-logos .logo-cell-a { grid-area: 1 / 1; }
+.footer-logos .logo-cell-b { grid-area: 2 / 1; }
+.footer-logos .logo-cell-c { grid-area: 1 / 3; }
+.footer-logos .logo-cell-d { grid-area: 2 / 3; }
+
+/* The TIC'S FRIENDS mark is the biggest one and sits in the middle,
+   spanning both rows. The source file is a wide banner (1050 × 202),
+   so size it by height instead of by width. */
+.footer-logos .logo-feature {
+  grid-area: 1 / 2 / span 2 / span 1;
+  height: 52px;
+  width: auto;
+  max-width: 300px;
+  border-radius: 6px;
+}
+
+.footer-logos img.logo-wide {
+  /* The official SVG is 783.6 × 144; keep its ratio so it always paints. */
+  width: 132px;
+  height: 24px;
+  max-width: none;
+}
+
+.footer-logos img.logo-square { height: 38px; }
+
+/* ---------- Small screens ---------- */
+@media (max-width: 900px) {
+  .brand-subtitle { display: none; }
+}
+
+@media (max-width: 860px) {
+  :root { --header-h: 56px; }
+  .site-header-inner { padding: 0 16px; gap: 16px; }
+  .brand-title { font-size: 21px; }
+  .site-nav a { padding: 0 10px; font-size: 13px; }
+
+  .site-footer-inner {
+    flex-direction: column;
+    justify-content: center;
+    gap: 10px;
+    padding: 12px 16px;
+    text-align: center;
+    font-size: 11.5px;
+  }
+
+  .footer-about { align-items: center; }
+
+  /* Mobile: the four institutional logos keep two rows and the big mark
+     stays in the middle, spanning the full width. */
+  .footer-logos {
+    grid-template-columns: auto auto;
+    grid-template-rows: auto auto auto;
+    gap: 10px 20px;
+  }
+  .footer-logos img { height: 24px; max-width: 104px; }
+  .footer-logos img.logo-wide { width: 104px; height: 19px; }
+  .footer-logos img.logo-square { height: 30px; }
+  .footer-logos .logo-cell-a { grid-area: 1 / 1; }
+  .footer-logos .logo-cell-c { grid-area: 1 / 2; }
+  .footer-logos .logo-feature { grid-area: 2 / 1 / span 1 / span 2; }
+  .footer-logos .logo-cell-b { grid-area: 3 / 1; }
+  .footer-logos .logo-cell-d { grid-area: 3 / 2; }
+  .footer-logos .logo-feature { height: 40px; max-width: 100%; }
+}
+
+/* Phones: the navigation keeps its icons and stays on the brand line, so the
+   header never grows into a second stacked row. The labels remain available
+   to screen readers. */
+@media (max-width: 560px) {
+  .brand-title { font-size: 18px; }
+  .site-nav { gap: 0; }
+  .site-nav a { padding: 0 12px; font-size: 16px; }
+  .site-nav .nav-label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+}

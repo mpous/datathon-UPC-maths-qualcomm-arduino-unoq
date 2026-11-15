@@ -1,0 +1,32 @@
+.page-home .hero h2 {
+  margin: 0 0 8px;
+  font-size: 24px;
+}
+
+.page-home .hero p {
+  margin: 0;
+  max-width: 80ch;
+}
+
+.page-home .card p { margin-bottom: 18px; }
+
+.page-home table {
+  width: 100%;
+  border-collapse: collapse;
+  background: #fff;
+  font-size: 14px;
+}
+
+.page-home th,
+.page-home td {
+  text-align: left;
+  padding: 10px;
+  border-bottom: 1px solid var(--line);
+}
+
+.page-home th {
+  color: var(--muted);
+  font-weight: 600;
+}
+
+.page-home tr:last-child td { border-bottom: 0; }
