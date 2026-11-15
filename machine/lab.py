@@ -17,12 +17,17 @@ Variants
   think   thinking mode on (server flag) with a token budget, then parse the letter
 Board time is estimated from token counts: new prompt tokens / 11.1 + generated tokens / 5.7.
 """
+import sys
+import os
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+
 import argparse
 import ast
 import json
 import math
 import os
 import queue
+import random
 import re
 import subprocess
 import sys
@@ -30,8 +35,8 @@ import time
 from concurrent.futures import ThreadPoolExecutor
 from paths import ROOT
 
-STARTER = os.environ.get("STARTER", "{ROOT}")
-OUT = os.environ.get("LAB_OUT", "{ROOT}/lab")
+STARTER = os.environ.get("STARTER", f"{ROOT}")
+OUT = os.environ.get("LAB_OUT", f"{ROOT}/lab")
 sys.path.insert(0, STARTER)
 from copilot.client import post  # noqa: E402
 from copilot.llm import SYSTEM, build_messages, format_problem  # noqa: E402
@@ -122,16 +127,39 @@ def run_one(url, problem, args, index):
 
     elif args.variant == "cot":
         ask = (format_problem(problem) + "\nThink step by step in one or two short sentences, "
-               "then give the letter.")
+               "and finish your explanation cleanly.")
         m = [{"role": "system", "content": SYSTEM}, {"role": "user", "content": ask}]
         c1, pn, gn = chat(url, m, max_tokens=args.max_tokens, logprobs=False)
-        thought = c1["message"]["content"].strip()
+        raw_thought = (c1["message"].get("content") or "").strip()
+        if c1.get("finish_reason") == "length" or (raw_thought and raw_thought[-1] not in ".!?"):
+            match = re.search(r"^(.*[.!?])(?=\s|$)", raw_thought, re.DOTALL)
+            thought = match.group(1).strip() if match else raw_thought
+        else:
+            thought = raw_thought
+        thought = re.sub(
+            r"(?:\s*(?:So the|Therefore,?|Thus,?|Hence,?|Answer\s*:).*)$",
+            "",
+            thought,
+            flags=re.IGNORECASE,
+        ).strip()
+        if thought and thought[-1] not in ".!?":
+            thought += "."
+        conclusion_phrases = [
+            "So the correct answer is",
+            "Answer:",
+            "Therefore, the correct answer is",
+            "Thus, the correct option is",
+            "Hence, the answer is",
+        ]
+        lead = random.choice(conclusion_phrases)
         m += [{"role": "assistant", "content": thought},
-              {"role": "user", "content": "So the letter of the correct option is:"}]
+              {"role": "user", "content": f"Complete with the single letter (A, B, C, D, or E). {lead}"}]
         c2, pn2, gn2 = chat(url, m)
         read, wrote = pn + pn2, gn + gn2
-        rec["lp"] = letter_logprobs(c2)
-        rec["thought"] = thought
+        lp = letter_logprobs(c2)
+        best_letter = max(lp, key=lp.get)
+        rec["lp"] = lp
+        rec["thought"] = " ".join(part for part in (thought, f"{lead} {best_letter}.") if part)
 
     elif args.variant == "pot":
         opts = {k: numeric(v) for k, v in (problem.get("options") or {}).items()}

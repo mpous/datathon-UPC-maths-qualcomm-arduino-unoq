@@ -1,0 +1,15 @@
+0.00.218.037 I srv  llama_server: initializing ...
+0.00.230.788 I cmn  common_param: common_params_print_info: verbosity = 3 (adjust with the `-lv N` CLI arg)
+0.00.282.065 W srv  server_setup: security: no API key is set and CORS allows all origins (see https://github.com/ggml-org/llama.cpp/pull/25655)
+0.00.630.811 I srv    load_model: loading model '..\\models\Qwen3.5-0.8B-WSP-Q8_0.gguf'
+0.00.631.915 E gguf_init_from_file: failed to open GGUF file '..\\models\Qwen3.5-0.8B-WSP-Q8_0.gguf' (No such file or directory)
+0.00.632.074 E llama_model_load: error loading model: llama_model_loader: failed to load model from ..\\models\Qwen3.5-0.8B-WSP-Q8_0.gguf
+0.00.632.090 E llama_model_load_from_file_impl: failed to load model
+0.00.632.149 E common_fit_params: encountered an error while trying to fit params to free device memory: failed to load model
+0.00.632.340 E gguf_init_from_file: failed to open GGUF file '..\\models\Qwen3.5-0.8B-WSP-Q8_0.gguf' (No such file or directory)
+0.00.632.410 E llama_model_load: error loading model: llama_model_loader: failed to load model from ..\\models\Qwen3.5-0.8B-WSP-Q8_0.gguf
+0.00.632.412 E llama_model_load_from_file_impl: failed to load model
+0.00.632.415 E cmn  common_init_: failed to load model '..\\models\Qwen3.5-0.8B-WSP-Q8_0.gguf'
+0.00.632.418 E srv    load_model: failed to load model, '..\\models\Qwen3.5-0.8B-WSP-Q8_0.gguf'
+0.00.632.427 I srv   operator (): operator (): cleaning up before exit...
+0.00.690.505 E srv  server_run_i: exiting due to model loading error

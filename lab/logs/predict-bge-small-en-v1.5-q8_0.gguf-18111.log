@@ -1,0 +1,18 @@
+0.00.004.165 I srv  llama_server: initializing ...
+0.00.006.064 I cmn  common_param: common_params_print_info: verbosity = 3 (adjust with the `-lv N` CLI arg)
+0.00.006.461 W srv  server_setup: security: no API key is set and CORS allows all origins (see https://github.com/ggml-org/llama.cpp/pull/25655)
+0.00.010.779 I srv    load_model: loading model 'C:\Users\marcb\Documents\GitHub\datathon-fme-2026\qualcomm\models\bge-small-en-v1.5-q8_0.gguf'
+0.00.070.173 W load: special_eos_id is not in special_eog_ids - the tokenizer config may be incorrect
+0.00.101.358 W llama_context: n_ctx_seq (4096) > n_ctx_train (512) -- possible training context overflow
+0.00.104.437 I cmn          init: llama threadpool init, n_threads = 4
+0.00.125.326 W srv    load_model: the slot context (4096) exceeds the training context of the model (512) - capping
+0.00.125.332 W srv    load_model: speculative decoding not supported by this context
+0.00.125.333 I srv    load_model: initializing, n_slots = 1, n_ctx_slot = 512, kv_unified = 'false'
+0.00.125.423 W srv          init: --cache-idle-slots requires --cache-ram, disabling
+0.00.135.563 I srv  server_run_i: model loaded
+0.00.135.574 I srv  server_on_li: listening on http://127.0.0.1:18111
+0.00.511.020 I slot get_availabl: id  0 | task -1 | selected slot by LRU, n_tokens = 0, t_last = -1
+0.00.511.045 I slot launch_slot_: id  0 | task 0 | processing task, is_child = 0
+0.00.511.558 E srv    send_error: task id = 0, error: the current context does not support logits computation. skipping
+0.00.511.569 I slot      release: id  0 | task 0 | stop processing: n_tokens = 0, truncated = 0
+0.00.511.583 W srv          stop: cancel task, id_task = 0

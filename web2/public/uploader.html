@@ -1,0 +1,605 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>M3Kang Image & JSON Uploader</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" crossorigin="anonymous">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js" crossorigin="anonymous"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js" crossorigin="anonymous"></script>
+  <style>
+    :root { --ink:#1d2433; --muted:#5c667a; --line:#dfe3ea; --bg:#f5f7fa; --card:#fff; --ok:#1b7f3b; --bad:#b3261e; --accent:#1f5fbf; }
+    * { box-sizing:border-box; }
+    body { margin:0; font:15px/1.5 system-ui,sans-serif; color:var(--ink); background:var(--bg); }
+    header { padding:22px 20px; background:var(--card); border-bottom:1px solid var(--line); }
+    .header-inner { max-width:1300px; margin:auto; display:flex; flex-wrap:wrap; gap:10px; align-items:center; }
+    h1 { font-size:18px; width:100%; margin:0; }
+    .pill { font-size:12px; padding:2px 10px; border-radius:999px; background:var(--bg); border:1px solid var(--line); color:var(--muted); }
+    nav.site-nav { display:flex; flex-wrap:wrap; gap:8px; width:100%; margin:6px 0 4px; }
+    .site-nav a { display:inline-flex; align-items:center; gap:7px; padding:7px 12px; border:1px solid var(--line); border-radius:7px; color:var(--ink); background:#fff; text-decoration:none; font-weight:600; transition:.2s; }
+    .site-nav a:hover, .site-nav a.active { color:#fff; background:var(--accent); border-color:var(--accent); box-shadow:0 3px 8px #1f5fbf33; }
+    main { max-width:1300px; margin:auto; padding:20px; display:grid; grid-template-columns:1fr 1fr; gap:20px; align-items:start; }
+    .col { display:flex; flex-direction:column; gap:20px; min-width:0; }
+    section { background:var(--card); border:1px solid var(--line); border-radius:8px; padding:18px 20px; }
+    section h2 { font-size:16px; margin:0 0 6px; }
+    .sub { color:var(--muted); font-size:13px; margin:0 0 14px; }
+    .dropzone { border:2px dashed var(--line); border-radius:8px; padding:22px 16px; text-align:center; background:var(--bg); cursor:pointer; transition:.15s; }
+    .dropzone:hover, .dropzone.drag { border-color:var(--accent); background:#eef4fd; }
+    .dropzone b { color:var(--accent); }
+    #preview-wrap { display:none; margin-top:12px; text-align:center; }
+    #preview-img { max-width:100%; max-height:320px; border:1px solid var(--line); border-radius:6px; background:#fff; }
+    .preview-meta { font-size:12px; color:var(--muted); margin-top:4px; }
+    .controls { display:flex; flex-wrap:wrap; gap:12px; align-items:center; margin-top:14px; }
+    .ctrl-label { font-size:13px; color:var(--muted); display:inline-flex; align-items:center; gap:6px; }
+    select, input[type="number"], input[type="text"], textarea, button { font:inherit; }
+    select, input[type="number"], input[type="text"] { padding:5px 8px; border:1px solid var(--line); border-radius:6px; background:#fff; }
+    textarea { width:100%; border:1px solid var(--line); border-radius:6px; padding:10px; font-size:14px; line-height:1.45; resize:vertical; }
+    textarea.mono { font-family:ui-monospace,SFMono-Regular,Consolas,monospace; font-size:12.5px; background:var(--bg); }
+    .primary, .secondary { padding:8px 15px; border-radius:6px; cursor:pointer; font-weight:600; }
+    .primary { border:0; background:var(--accent); color:#fff; }
+    .primary:disabled, .secondary:disabled { opacity:.5; cursor:default; }
+    .secondary { border:1px solid var(--line); background:#fff; color:var(--ink); font-weight:500; }
+    .secondary:hover:not(:disabled) { border-color:var(--accent); color:var(--accent); }
+    .hint { color:var(--muted); font-size:13px; }
+    .verdict { font-weight:700; font-size:16px; margin-top:12px; }
+    .ok { color:var(--ok); } .bad { color:var(--bad); } .neutral { color:var(--accent); }
+    .letters-bar { display:flex; gap:8px; margin:10px 0; }
+    .letter-badge { width:44px; height:40px; display:inline-flex; align-items:center; justify-content:center; border:2px solid var(--line); border-radius:8px; font-weight:700; font-size:17px; background:#fff; }
+    .letter-badge.pred { border-color:var(--accent); background:#e8f0fe; color:var(--accent); }
+    .letter-badge.right { border-color:var(--ok); background:#e6f4ea; color:var(--ok); }
+    .letter-badge.wrong { border-color:var(--bad); background:#fce8e6; color:var(--bad); }
+    .thought-box { margin-top:12px; padding:13px 15px; background:var(--bg); border-left:3px solid var(--accent); border-radius:6px; }
+    .thought-title { font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:.04em; color:var(--accent); margin-bottom:6px; }
+    .thought-body { font-size:14px; line-height:1.6; }
+    .rich-text p { margin:0 0 10px; } .rich-text p:last-child { margin-bottom:0; }
+    .rich-text ul, .rich-text ol { margin:6px 0 10px; padding-left:22px; }
+    .rich-text code { background:rgba(29,36,51,.07); padding:1px 5px; border-radius:4px; font-family:ui-monospace,SFMono-Regular,Consolas,monospace; font-size:13px; }
+    .math-fallback { font-family:"Cambria Math","Times New Roman",Georgia,serif; }
+    .math-display { display:block; text-align:center; margin:8px 0; font-size:16px; }
+    table { border-collapse:collapse; margin-top:10px; font-size:14px; }
+    td { padding:3px 14px 3px 0; } td:first-child { color:var(--muted); }
+    details { margin-top:10px; } summary { cursor:pointer; color:var(--accent); font-size:14px; }
+    pre { white-space:pre-wrap; background:var(--bg); padding:10px; border-radius:6px; max-height:300px; overflow:auto; font-size:12.5px; }
+    .meta-grid { display:grid; grid-template-columns:repeat(4, 1fr); gap:8px; margin-bottom:10px; }
+    .meta-grid label { display:flex; flex-direction:column; gap:3px; font-size:12px; color:var(--muted); }
+    .meta-grid input, .meta-grid select { width:100%; }
+    @media (max-width:980px) { main { grid-template-columns:1fr; } .meta-grid { grid-template-columns:repeat(2, 1fr); } }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="header-inner">
+      <h1>M3Kang Image &amp; JSON Uploader</h1>
+      <nav class="site-nav">
+        <a href="/">🏠 Home</a>
+        <a href="/analytics">📊 Analytics</a>
+        <a href="/solver">🧩 Exercise Solver</a>
+        <a class="active" href="/uploader">📤 Image &amp; JSON Uploader</a>
+      </nav>
+      <span id="s-model" class="pill">loading models...</span>
+      <span id="s-data" class="pill"></span>
+    </div>
+  </header>
+
+  <main>
+    <!-- LEFT COLUMN: UPLOAD IMAGE -> OCR + FULL AI RESOLUTION -->
+    <div class="col">
+      <section>
+        <h2>1. Upload Kangaroo Exercise Image</h2>
+        <p class="sub">Upload, drag &amp; drop, or paste (<code>Ctrl+V</code>) an exercise image to extract text/options via OCR and receive the full AI resolution.</p>
+
+        <div id="dropzone" class="dropzone">
+          <div><b>Click to choose an image</b>, drag &amp; drop here, or paste from clipboard</div>
+          <div class="hint" style="margin-top:4px">Supports PNG, JPG, WEBP (e.g. <code>lvl-0_2015_13_eng.png</code>)</div>
+          <input id="file-input" type="file" accept="image/*" style="display:none">
+        </div>
+
+        <div id="preview-wrap">
+          <img id="preview-img" alt="Uploaded problem">
+          <div id="preview-meta" class="preview-meta"></div>
+        </div>
+
+        <div class="controls">
+          <label class="ctrl-label">Model
+            <select id="f-model"></select>
+          </label>
+          <label class="ctrl-label">Variant
+            <select id="f-variant">
+              <option value="cot" selected>cot</option>
+              <option value="letter">letter</option>
+              <option value="pot">pot</option>
+              <option value="official">official</option>
+            </select>
+          </label>
+          <label class="ctrl-label">Num tokens
+            <input id="f-max-tokens" type="number" value="150" min="1" max="32768" style="width:76px">
+          </label>
+          <label class="ctrl-label">Language
+            <select id="f-lang">
+              <option value="auto" selected>auto</option>
+              <option value="cat">cat</option>
+              <option value="eng">eng</option>
+              <option value="esp">esp</option>
+              <option value="fra">fra</option>
+              <option value="deu">deu</option>
+            </select>
+          </label>
+        </div>
+
+        <div class="controls">
+          <button id="btn-solve-img" class="primary" disabled>Solve Image with AI</button>
+          <button id="btn-ocr-only" class="secondary" disabled>Extract JSON only (OCR)</button>
+          <span id="img-status" class="hint"></span>
+        </div>
+      </section>
+
+      <section id="resolution-card" style="display:none">
+        <h2>AI Resolution</h2>
+        <div id="resolution-body"></div>
+      </section>
+    </div>
+
+    <!-- RIGHT COLUMN: RAW TEXT -> STRUCTURED JSON & JSON EDITOR -->
+    <div class="col">
+      <section>
+        <h2>2. Raw Image Text &rarr; Structured JSON</h2>
+        <p class="sub">Paste raw text copied from an exercise image (statement + options A–E) to structure it into M3Kang JSON format.</p>
+
+        <div class="meta-grid">
+          <label>Problem ID
+            <input id="m-id" type="text" placeholder="auto (e.g. lvl-0_2026_1)">
+          </label>
+          <label>Language
+            <select id="m-lang">
+              <option value="auto" selected>auto</option>
+              <option value="cat">cat</option>
+              <option value="eng">eng</option>
+              <option value="esp">esp</option>
+              <option value="fra">fra</option>
+              <option value="deu">deu</option>
+            </select>
+          </label>
+          <label>Level
+            <input id="m-level" type="number" value="0" min="0" max="12">
+          </label>
+          <label>Correct Label
+            <select id="m-label">
+              <option value="" selected>(unknown)</option>
+              <option value="A">A</option>
+              <option value="B">B</option>
+              <option value="C">C</option>
+              <option value="D">D</option>
+              <option value="E">E</option>
+            </select>
+          </label>
+        </div>
+
+        <textarea id="raw-text" rows="7" placeholder="Paste raw exercise text here...&#10;Example:&#10;13. For 3 days, the cat Joy has been catching mice. Each day she caught 2 more mice than the previous day. In total she caught 45 mice. How many mice did she catch on the third day?&#10;A) 12   B) 15   C) 17   D) 20   E) 24"></textarea>
+
+        <div class="controls">
+          <button id="btn-struct-fast" class="primary">Structure to JSON (Instant)</button>
+          <button id="btn-struct-ai" class="secondary">Structure with AI (Clean OCR)</button>
+          <span id="struct-status" class="hint"></span>
+        </div>
+      </section>
+
+      <section>
+        <h2>3. Structured JSON Output</h2>
+        <p class="sub">Generated from either the uploaded image OCR or the raw text box above. Editable before solving or exporting.</p>
+
+        <textarea id="json-out" class="mono" rows="14" placeholder='{\n  "id": "lvl-0_2026_1",\n  "language": "cat",\n  "level": 0,\n  "year": 2026,\n  "text_only": true,\n  "text": "...",\n  "options": { "A": "...", "B": "...", "C": "...", "D": "...", "E": "..." },\n  "label": ""\n}'></textarea>
+
+        <div class="controls">
+          <button id="btn-solve-json" class="primary">Solve JSON with AI</button>
+          <button id="btn-copy-json" class="secondary">Copy JSON</button>
+          <button id="btn-copy-jsonl" class="secondary">Copy JSONL (1 line)</button>
+          <button id="btn-download-json" class="secondary">Download .json</button>
+          <button id="btn-save-val" class="secondary">Save to val.jsonl</button>
+        </div>
+        <div id="json-status" class="hint" style="margin-top:8px"></div>
+      </section>
+    </div>
+  </main>
+
+  <script>
+    const $ = id => document.getElementById(id);
+    const esc = value => String(value).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+    const api = async (url, body) => {
+      const response = await fetch(url, body ? {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      } : {});
+      const data = await response.json();
+      if (!response.ok) {
+        const err = new Error(data.error || response.statusText);
+        err.data = data;
+        throw err;
+      }
+      return data;
+    };
+
+    function offlineLatexHtml(tex, display) {
+      let s = esc(tex.trim())
+        .replace(/\\left|\\right/g, "")
+        .replace(/\\times/g, "×")
+        .replace(/\\cdot/g, "·")
+        .replace(/\\div/g, "÷")
+        .replace(/\\pm/g, "±")
+        .replace(/\\mp/g, "∓")
+        .replace(/\\leq?/g, "≤")
+        .replace(/\\geq?/g, "≥")
+        .replace(/\\neq?/g, "≠")
+        .replace(/\\approx/g, "≈")
+        .replace(/\\equiv/g, "≡")
+        .replace(/\\pi/g, "π")
+        .replace(/\\alpha/g, "α")
+        .replace(/\\beta/g, "β")
+        .replace(/\\gamma/g, "γ")
+        .replace(/\\theta/g, "θ")
+        .replace(/\\Delta/g, "Δ")
+        .replace(/\\infty/g, "∞")
+        .replace(/\\angle/g, "∠")
+        .replace(/\\triangle/g, "△")
+        .replace(/\^\\circ|\\circ|\\degree/g, "°")
+        .replace(/\\sqrt\{([^{}]+)\}/g, "√($1)")
+        .replace(/\\frac\{([^{}]+)\}\{([^{}]+)\}/g, "($1)/($2)")
+        .replace(/\\(?:text|mathrm|mathbf|mathit)\{([^{}]+)\}/g, "$1")
+        .replace(/\^\{([^{}]+)\}/g, "<sup>$1</sup>")
+        .replace(/\^([A-Za-z0-9])/g, "<sup>$1</sup>")
+        .replace(/_\{([^{}]+)\}/g, "<sub>$1</sub>")
+        .replace(/_([A-Za-z0-9])/g, "<sub>$1</sub>")
+        .replace(/\\[,;! ]/g, " ");
+      return `<span class="math-fallback${display ? " math-display" : ""}">${s}</span>`;
+    }
+
+    function formatInlineMarkdown(text) {
+      return text
+        .replace(/`([^`]+)`/g, "<code>$1</code>")
+        .replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>")
+        .replace(/\*([^*\n]+)\*/g, "<em>$1</em>");
+    }
+
+    function renderRichText(raw) {
+      if (raw === null || raw === undefined) return "";
+      const mathTokens = [];
+      const textWithPlaceholders = String(raw).replace(
+        /(\$\$[\s\S]+?\$\$|\\\[[\s\S]+?\\\]|\\\([\s\S]+?\\\)|(?<!\\)\$(?!\s)([^$\n]+?)(?<!\s)\$)/g,
+        (match) => {
+          const isDisplay = match.startsWith("$$") || match.startsWith("\\[");
+          const inner = match.replace(/^\$\$|\$\$$|^\\\[|\\\]$|^\\\(|\\\)$|^\$|\$$/g, "");
+          const idx = mathTokens.push({ raw: match, inner, isDisplay }) - 1;
+          return `\u0000MATH${idx}\u0000`;
+        }
+      );
+
+      const blocks = esc(textWithPlaceholders).trim().split(/\n{2,}/);
+      const html = blocks.map((block) => {
+        const lines = block.split(/\r?\n/);
+        if (lines.every((l) => /^\s*[-*]\s+/.test(l))) {
+          const items = lines.map((l) => `<li>${formatInlineMarkdown(l.replace(/^\s*[-*]\s+/, ""))}</li>`).join("");
+          return `<ul>${items}</ul>`;
+        }
+        if (lines.every((l) => /^\s*\d+\.\s+/.test(l))) {
+          const items = lines.map((l) => `<li>${formatInlineMarkdown(l.replace(/^\s*\d+\.\s+/, ""))}</li>`).join("");
+          return `<ol>${items}</ol>`;
+        }
+        return `<p>${lines.map(formatInlineMarkdown).join("<br>")}</p>`;
+      }).join("");
+
+      const hasKatex = typeof window.renderMathInElement === "function";
+      return html.replace(/\u0000MATH(\d+)\u0000/g, (_, idx) => {
+        const tok = mathTokens[Number(idx)];
+        return hasKatex ? esc(tok.raw) : offlineLatexHtml(tok.inner, tok.isDisplay);
+      });
+    }
+
+    function applyMathTypesetting(container) {
+      if (!container || typeof window.renderMathInElement !== "function") return;
+      window.renderMathInElement(container, {
+        delimiters: [
+          { left: "$$", right: "$$", display: true },
+          { left: "\\[", right: "\\]", display: true },
+          { left: "$", right: "$", display: false },
+          { left: "\\(", right: "\\)", display: false },
+        ],
+        throwOnError: false,
+      });
+    }
+
+    let uploadedImageBase64 = "";
+    let uploadedFilename = "";
+    let info = null;
+
+    function handleSelectedFile(file) {
+      if (!file || !file.type.startsWith("image/")) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        uploadedImageBase64 = reader.result;
+        uploadedFilename = file.name || "pasted_image.png";
+        $("preview-img").src = uploadedImageBase64;
+        $("preview-wrap").style.display = "block";
+        $("preview-meta").textContent = `${uploadedFilename} (${Math.round(file.size / 1024)} KB)`;
+        $("btn-solve-img").disabled = false;
+        $("btn-ocr-only").disabled = false;
+        $("img-status").textContent = "Image ready.";
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function populateJsonEditor(problem, rawText) {
+      $("json-out").value = JSON.stringify(problem, null, 2);
+      if (rawText && !$("raw-text").value.trim()) {
+        $("raw-text").value = rawText;
+      }
+      if (problem.id) $("m-id").value = problem.id;
+      if (problem.language) $("m-lang").value = problem.language;
+      if (problem.level !== undefined) $("m-level").value = problem.level;
+      if (problem.label) $("m-label").value = problem.label;
+    }
+
+    function renderResolution(r, problem) {
+      $("resolution-card").style.display = "block";
+      const lettersHtml = "ABCDE".split("").map((l) => {
+        let cls = "letter-badge";
+        if (r.has_label && l === r.label) cls += " right";
+        else if (r.has_label && l === r.answer && !r.correct) cls += " wrong";
+        else if (l === r.answer) cls += " pred";
+        return `<span class="${cls}">${l}</span>`;
+      }).join("");
+
+      const optText = problem && problem.options && problem.options[r.answer]
+        ? ` (${esc(problem.options[r.answer])})`
+        : "";
+
+      let verdictHtml;
+      if (r.has_label) {
+        verdictHtml = `<div class="verdict ${r.correct ? "ok" : "bad"}">Predicted answer: ${esc(r.answer)}${optText} — ${r.correct ? "Correct!" : "Wrong, expected " + esc(r.label)}.</div>`;
+      } else {
+        verdictHtml = `<div class="verdict neutral">Predicted answer: ${esc(r.answer)}${optText}</div>`;
+      }
+
+      const thoughtHtml = r.thought
+        ? `<div class="thought-box"><div class="thought-title">AI Step-by-Step Resolution</div><div class="thought-body rich-text">${renderRichText(r.thought)}</div></div>`
+        : "";
+
+      const rows = [
+        `<tr><td>Model</td><td>${esc(r.model)}</td></tr>`,
+        `<tr><td>Variant</td><td>${esc(r.variant)}</td></tr>`,
+        `<tr><td>Status</td><td>${esc(r.status)}</td></tr>`,
+        `<tr><td>Time</td><td>${r.seconds} s${typeof r.board_s === "number" ? ` (board ~${r.board_s} s)` : ""}</td></tr>`,
+        `<tr><td>Tokens</td><td>${r.prompt_tokens} read · ${r.written_tokens ?? 0} written</td></tr>`,
+      ].join("");
+
+      const lpHtml = r.lp
+        ? `<details><summary>Logprobs (A–E)</summary><pre>${esc("ABCDE".split("").map(l => `${l}: ${r.lp[l]}`).join("\n"))}</pre></details>`
+        : "";
+
+      const promptHtml = r.prompt
+        ? `<details><summary>Prompt sent to model</summary><pre>${esc(r.prompt)}</pre></details>`
+        : "";
+
+      $("resolution-body").innerHTML = `
+        ${verdictHtml}
+        <div class="letters-bar">${lettersHtml}</div>
+        ${thoughtHtml}
+        <table>${rows}</table>
+        ${lpHtml}
+        ${promptHtml}
+      `;
+      applyMathTypesetting($("resolution-body"));
+    }
+
+    async function solveImage() {
+      if (!uploadedImageBase64) return;
+      $("btn-solve-img").disabled = true;
+      $("btn-ocr-only").disabled = true;
+      const t0 = Date.now();
+      const timer = setInterval(() => {
+        $("img-status").textContent = `Running OCR + AI... ${((Date.now() - t0) / 1000).toFixed(1)} s`;
+      }, 250);
+
+      try {
+        const res = await api("/api/upload-solve", {
+          image_base64: uploadedImageBase64,
+          filename: uploadedFilename,
+          model: $("f-model").value,
+          variant: $("f-variant").value,
+          max_tokens: Number($("f-max-tokens").value) || 150,
+          language: $("f-lang").value,
+          id: $("m-id").value.trim(),
+          level: $("m-level").value,
+          label: $("m-label").value,
+        });
+        populateJsonEditor(res.problem, res.raw_text);
+        renderResolution(res.prediction, res.problem);
+        $("img-status").textContent = "Completed.";
+      } catch (err) {
+        $("img-status").textContent = `Error: ${err.message}`;
+        if (err.data && err.data.problem) {
+          populateJsonEditor(err.data.problem, err.data.raw_text);
+        }
+      } finally {
+        clearInterval(timer);
+        $("btn-solve-img").disabled = false;
+        $("btn-ocr-only").disabled = false;
+      }
+    }
+
+    async function extractOcrOnly() {
+      if (!uploadedImageBase64) return;
+      $("btn-solve-img").disabled = true;
+      $("btn-ocr-only").disabled = true;
+      $("img-status").textContent = "Running RapidOCR...";
+      try {
+        const res = await api("/api/upload-ocr", {
+          image_base64: uploadedImageBase64,
+          filename: uploadedFilename,
+          language: $("f-lang").value,
+          id: $("m-id").value.trim(),
+          level: $("m-level").value,
+          label: $("m-label").value,
+        });
+        populateJsonEditor(res.problem, res.rawText);
+        const optCount = Object.keys(res.problem.options || {}).length;
+        $("img-status").textContent = `OCR done (${optCount}/5 options read).`;
+      } catch (err) {
+        $("img-status").textContent = `OCR error: ${err.message}`;
+      } finally {
+        $("btn-solve-img").disabled = false;
+        $("btn-ocr-only").disabled = false;
+      }
+    }
+
+    async function structureRawText(useAi) {
+      const raw = $("raw-text").value;
+      if (!raw.trim()) {
+        $("struct-status").textContent = "Paste raw text first.";
+        return;
+      }
+      $("btn-struct-fast").disabled = true;
+      $("btn-struct-ai").disabled = true;
+      $("struct-status").textContent = useAi ? "Structuring with AI..." : "Structuring...";
+      try {
+        const res = await api("/api/structure-text", {
+          raw_text: raw,
+          use_ai: useAi,
+          model: $("f-model").value,
+          id: $("m-id").value.trim(),
+          language: $("m-lang").value,
+          level: $("m-level").value,
+          label: $("m-label").value,
+        });
+        populateJsonEditor(res.problem, "");
+        const optCount = Object.keys(res.problem.options || {}).length;
+        $("struct-status").textContent = `Structured via ${res.method} (${optCount}/5 options).`;
+      } catch (err) {
+        $("struct-status").textContent = `Error: ${err.message}`;
+      } finally {
+        $("btn-struct-fast").disabled = false;
+        $("btn-struct-ai").disabled = false;
+      }
+    }
+
+    async function solveCurrentJson() {
+      let parsed;
+      try {
+        parsed = JSON.parse($("json-out").value);
+      } catch (e) {
+        $("json-status").textContent = `Invalid JSON: ${e.message}`;
+        return;
+      }
+      $("btn-solve-json").disabled = true;
+      const t0 = Date.now();
+      const timer = setInterval(() => {
+        $("json-status").textContent = `Solving JSON with AI... ${((Date.now() - t0) / 1000).toFixed(1)} s`;
+      }, 250);
+
+      try {
+        const res = await api("/api/solve-json", {
+          problem: parsed,
+          model: $("f-model").value,
+          variant: $("f-variant").value,
+          max_tokens: Number($("f-max-tokens").value) || 150,
+        });
+        populateJsonEditor(res.problem, "");
+        renderResolution(res.prediction, res.problem);
+        $("json-status").textContent = "Solved.";
+      } catch (err) {
+        $("json-status").textContent = `Error: ${err.message}`;
+      } finally {
+        clearInterval(timer);
+        $("btn-solve-json").disabled = false;
+      }
+    }
+
+    // Event bindings
+    $("dropzone").addEventListener("click", () => $("file-input").click());
+    $("file-input").addEventListener("change", (e) => handleSelectedFile(e.target.files[0]));
+    $("dropzone").addEventListener("dragover", (e) => { e.preventDefault(); $("dropzone").classList.add("drag"); });
+    $("dropzone").addEventListener("dragleave", () => $("dropzone").classList.remove("drag"));
+    $("dropzone").addEventListener("drop", (e) => {
+      e.preventDefault();
+      $("dropzone").classList.remove("drag");
+      if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+        handleSelectedFile(e.dataTransfer.files[0]);
+      }
+    });
+    document.addEventListener("paste", (e) => {
+      const items = (e.clipboardData || {}).items || [];
+      for (const item of items) {
+        if (item.type.startsWith("image/")) {
+          handleSelectedFile(item.getAsFile());
+          break;
+        }
+      }
+    });
+
+    $("f-model").addEventListener("change", () => {
+      $("s-model").textContent = $("f-model").value.replace(/\.gguf$/i, "");
+    });
+
+    $("btn-solve-img").addEventListener("click", solveImage);
+    $("btn-ocr-only").addEventListener("click", extractOcrOnly);
+    $("btn-struct-fast").addEventListener("click", () => structureRawText(false));
+    $("btn-struct-ai").addEventListener("click", () => structureRawText(true));
+    $("btn-solve-json").addEventListener("click", solveCurrentJson);
+
+    $("btn-copy-json").addEventListener("click", async () => {
+      await navigator.clipboard.writeText($("json-out").value);
+      $("json-status").textContent = "Copied formatted JSON to clipboard.";
+    });
+
+    $("btn-copy-jsonl").addEventListener("click", async () => {
+      try {
+        const oneLine = JSON.stringify(JSON.parse($("json-out").value));
+        await navigator.clipboard.writeText(oneLine);
+        $("json-status").textContent = "Copied 1-line JSONL to clipboard.";
+      } catch (e) {
+        $("json-status").textContent = `Invalid JSON: ${e.message}`;
+      }
+    });
+
+    $("btn-download-json").addEventListener("click", () => {
+      try {
+        const obj = JSON.parse($("json-out").value);
+        const blob = new Blob([JSON.stringify(obj, null, 2) + "\n"], { type: "application/json" });
+        const a = document.createElement("a");
+        a.href = URL.createObjectURL(blob);
+        a.download = `${obj.id || "problem"}_${obj.language || "eng"}.json`;
+        a.click();
+      } catch (e) {
+        $("json-status").textContent = `Invalid JSON: ${e.message}`;
+      }
+    });
+
+    $("btn-save-val").addEventListener("click", async () => {
+      try {
+        const obj = JSON.parse($("json-out").value);
+        const res = await api("/api/save-problem", {
+          problem: obj,
+          image_base64: uploadedImageBase64 || "",
+        });
+        $("json-status").textContent = `Saved '${res.key}' to val.jsonl (total: ${res.total} problems).`;
+      } catch (err) {
+        $("json-status").textContent = `Save error: ${err.message}`;
+      }
+    });
+
+    async function main() {
+      info = await api("/api/info");
+      const ggufModels = (info.models && info.models.length)
+        ? info.models
+        : (info.model ? [info.model] : ["Qwen_Qwen3.5-0.8B-Q8_0.gguf"]);
+      $("f-model").innerHTML = ggufModels
+        .map(m => `<option value="${esc(m)}"${m === info.model ? " selected" : ""}>${esc(m)}</option>`)
+        .join("");
+      $("s-model").textContent = $("f-model").value.replace(/\.gguf$/i, "");
+      $("s-data").textContent = `${info.count} problems in dataset`;
+    }
+
+    main().catch(err => { $("img-status").textContent = err.message; });
+  </script>
+</body>
+</html>

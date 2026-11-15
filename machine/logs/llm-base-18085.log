@@ -1,24 +1,24 @@
-0.00.013.401 I srv  llama_server: initializing ...
-0.00.015.686 I cmn  common_param: common_params_print_info: verbosity = 3 (adjust with the `-lv N` CLI arg)
-0.00.016.254 W srv  server_setup: security: no API key is set and CORS allows all origins (see https://github.com/ggml-org/llama.cpp/pull/25655)
-0.00.041.258 I srv    load_model: loading model '..\\models\Qwen_Qwen3.5-0.8B-Q8_0.gguf'
-0.01.981.411 W model has unused tensor blk.24.attn_norm.weight (size = 4096 bytes) -- ignoring
-0.01.981.433 W model has unused tensor blk.24.post_attention_norm.weight (size = 4096 bytes) -- ignoring
-0.01.981.465 W model has unused tensor blk.24.attn_q.weight (size = 4456448 bytes) -- ignoring
-0.01.981.476 W model has unused tensor blk.24.attn_k.weight (size = 557056 bytes) -- ignoring
-0.01.981.493 W model has unused tensor blk.24.attn_v.weight (size = 557056 bytes) -- ignoring
-0.01.981.535 W model has unused tensor blk.24.attn_output.weight (size = 2228224 bytes) -- ignoring
-0.01.981.550 W model has unused tensor blk.24.attn_q_norm.weight (size = 1024 bytes) -- ignoring
-0.01.981.561 W model has unused tensor blk.24.attn_k_norm.weight (size = 1024 bytes) -- ignoring
-0.01.981.573 W model has unused tensor blk.24.ffn_gate.weight (size = 3899392 bytes) -- ignoring
-0.01.981.585 W model has unused tensor blk.24.ffn_down.weight (size = 3899392 bytes) -- ignoring
-0.01.981.600 W model has unused tensor blk.24.ffn_up.weight (size = 3899392 bytes) -- ignoring
-0.01.981.613 W model has unused tensor blk.24.nextn.eh_proj.weight (size = 2228224 bytes) -- ignoring
-0.01.981.626 W model has unused tensor blk.24.nextn.enorm.weight (size = 4096 bytes) -- ignoring
-0.01.981.639 W model has unused tensor blk.24.nextn.hnorm.weight (size = 4096 bytes) -- ignoring
-0.01.981.693 W model has unused tensor blk.24.nextn.shared_head_norm.weight (size = 4096 bytes) -- ignoring
-0.03.010.821 I cmn          init: llama threadpool init, n_threads = 4
-0.08.027.069 I srv    load_model: initializing, n_slots = 1, n_ctx_slot = 4096, kv_unified = 'false'
-0.08.027.327 W srv          init: --cache-idle-slots requires --cache-ram, disabling
-0.08.040.998 I srv  server_run_i: model loaded
-0.08.041.023 I srv  server_on_li: listening on http://127.0.0.1:18085
+0.00.065.353 I srv  llama_server: initializing ...
+0.00.074.271 I cmn  common_param: common_params_print_info: verbosity = 3 (adjust with the `-lv N` CLI arg)
+0.00.074.998 W srv  server_setup: security: no API key is set and CORS allows all origins (see https://github.com/ggml-org/llama.cpp/pull/25655)
+0.00.294.081 I srv    load_model: loading model '..\\models\Qwen_Qwen3.5-0.8B-Q8_0.gguf'
+0.08.432.316 W model has unused tensor blk.24.attn_norm.weight (size = 4096 bytes) -- ignoring
+0.08.432.584 W model has unused tensor blk.24.post_attention_norm.weight (size = 4096 bytes) -- ignoring
+0.08.432.657 W model has unused tensor blk.24.attn_q.weight (size = 4456448 bytes) -- ignoring
+0.08.432.899 W model has unused tensor blk.24.attn_k.weight (size = 557056 bytes) -- ignoring
+0.08.432.985 W model has unused tensor blk.24.attn_v.weight (size = 557056 bytes) -- ignoring
+0.08.447.022 W model has unused tensor blk.24.attn_output.weight (size = 2228224 bytes) -- ignoring
+0.08.447.125 W model has unused tensor blk.24.attn_q_norm.weight (size = 1024 bytes) -- ignoring
+0.08.447.177 W model has unused tensor blk.24.attn_k_norm.weight (size = 1024 bytes) -- ignoring
+0.08.447.219 W model has unused tensor blk.24.ffn_gate.weight (size = 3899392 bytes) -- ignoring
+0.08.447.257 W model has unused tensor blk.24.ffn_down.weight (size = 3899392 bytes) -- ignoring
+0.08.447.295 W model has unused tensor blk.24.ffn_up.weight (size = 3899392 bytes) -- ignoring
+0.08.447.374 W model has unused tensor blk.24.nextn.eh_proj.weight (size = 2228224 bytes) -- ignoring
+0.08.447.415 W model has unused tensor blk.24.nextn.enorm.weight (size = 4096 bytes) -- ignoring
+0.08.447.456 W model has unused tensor blk.24.nextn.hnorm.weight (size = 4096 bytes) -- ignoring
+0.08.447.528 W model has unused tensor blk.24.nextn.shared_head_norm.weight (size = 4096 bytes) -- ignoring
+0.10.782.132 I cmn          init: llama threadpool init, n_threads = 4
+0.20.540.931 I srv    load_model: initializing, n_slots = 1, n_ctx_slot = 4096, kv_unified = 'false'
+0.20.541.202 W srv          init: --cache-idle-slots requires --cache-ram, disabling
+0.20.557.906 I srv  server_run_i: model loaded
+0.20.557.928 I srv  server_on_li: listening on http://127.0.0.1:18085

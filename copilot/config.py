@@ -3,7 +3,7 @@ import os
 import shlex
 from pathlib import Path
 
-ROOT = Path(__file__).parent.parent.parent
+ROOT = Path(__file__).parent.parent
 
 def load(path=os.path.join(ROOT, "config.env")):
     values = {}

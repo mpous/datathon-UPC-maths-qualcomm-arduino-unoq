@@ -9,22 +9,34 @@
     * { box-sizing:border-box; } body { margin:0; font:15px/1.5 system-ui,sans-serif; color:var(--ink); background:var(--bg); }
     header { padding:28px 20px; background:var(--card); border-bottom:1px solid var(--line); } header, main { max-width:1200px; margin:auto; }
     body > header { max-width:none; } .header-inner { max-width:1200px; margin:auto; } h1 { margin:0 0 8px; } p { color:var(--muted); }
-    main { padding:28px 20px; } .cards { display:grid; grid-template-columns:1fr 1fr; gap:20px; margin:24px 0; }
+    main { padding:28px 20px; } .cards { display:grid; grid-template-columns:repeat(3, 1fr); gap:20px; margin:24px 0; }
     .card { background:var(--card); border:1px solid var(--line); border-radius:8px; padding:22px; } .card h2 { margin-top:0; }
     a.button { display:inline-block; padding:9px 14px; background:var(--accent); color:#fff; border-radius:6px; text-decoration:none; font-weight:600; }
     table { border-collapse:collapse; width:100%; background:#fff; } th,td { text-align:left; padding:10px; border-bottom:1px solid var(--line); } th { color:var(--muted); }
     .site-nav { margin-top:18px; display:flex; flex-wrap:wrap; gap:8px; }
     .site-nav a { display:inline-flex; align-items:center; gap:7px; padding:8px 13px; border:1px solid var(--line); border-radius:7px; color:var(--ink); background:#fff; text-decoration:none; font-weight:600; transition:.2s; }
     .site-nav a:hover, .site-nav a.active { color:#fff; background:var(--accent); border-color:var(--accent); box-shadow:0 3px 8px #1f5fbf33; }
-    @media (max-width:700px) { .cards { grid-template-columns:1fr; } }
+    @media (max-width:850px) { .cards { grid-template-columns:1fr; } }
   </style>
 </head>
 <body>
-  <header><div class="header-inner"><h1>🦘 Kangaroo Math Exam Evaluation &amp; Solver</h1><p>Evaluation and inference workspace for multiple-choice exam problems.</p><nav class="site-nav"><a class="active" href="/">🏠 Home</a><a href="/analytics">📊 Analytics</a><a href="/uploader">🧩 Exercise Explorer</a></nav></div></header>
+  <header>
+    <div class="header-inner">
+      <h1>🦘 Kangaroo Math Exam Evaluation &amp; Solver</h1>
+      <p>Evaluation, OCR extraction, and inference workspace for multiple-choice exam problems.</p>
+      <nav class="site-nav">
+        <a class="active" href="/">🏠 Home</a>
+        <a href="/analytics">📊 Analytics</a>
+        <a href="/solver">🧩 Exercise Solver</a>
+        <a href="/uploader">📤 Image &amp; JSON Uploader</a>
+      </nav>
+    </div>
+  </header>
   <main>
     <div class="cards">
       <section class="card"><h2>📊 Model Analytics</h2><p>Inspect evaluation CSV metrics, accuracy, valid answers, latency and execution errors.</p><a class="button" href="/analytics">Open Analytics Dashboard</a></section>
-      <section class="card"><h2>🖼️ Exercise Explorer</h2><p>Explore Kangaroo problems, answer them, compare with the local model fallback and inspect the prompt.</p><a class="button" href="/uploader">Open Exercise Explorer</a></section>
+      <section class="card"><h2>🧩 Exercise Solver</h2><p>Explore Kangaroo validation problems, answer them, and compare with the local GGUF models.</p><a class="button" href="/solver">Open Exercise Solver</a></section>
+      <section class="card"><h2>📤 Image &amp; JSON Uploader</h2><p>Upload an exercise image to get its full AI resolution, or paste raw text to structure it into JSON.</p><a class="button" href="/uploader">Open Uploader</a></section>
     </div>
     <section class="card"><h2>Expected Evaluation Dataset Schema</h2><table><thead><tr><th>Column</th><th>Type</th><th>Description</th></tr></thead><tbody>
       <tr><td>id</td><td>string</td><td>Unique exercise identifier.</td></tr><tr><td>language / level</td><td>string / int</td><td>Exam language and difficulty tier.</td></tr>

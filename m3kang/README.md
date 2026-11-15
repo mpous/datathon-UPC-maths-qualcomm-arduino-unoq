@@ -1,0 +1,1 @@
+This folder was named "laptop" and "images_to_json.py" was named "pepare_m3kang.py".
