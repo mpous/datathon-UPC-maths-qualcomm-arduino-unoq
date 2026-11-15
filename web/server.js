@@ -20,6 +20,11 @@ const MIME_TYPES = {
   ".css": "text/css; charset=utf-8",
   ".html": "text/html; charset=utf-8",
   ".js": "text/javascript; charset=utf-8",
+  ".svg": "image/svg+xml",
+  ".png": "image/png",
+  ".jpg": "image/jpeg",
+  ".jpeg": "image/jpeg",
+  ".webp": "image/webp",
 };
 
 function sendJson(response, status, payload) {
@@ -155,13 +160,18 @@ function readJson(request) {
 }
 
 function serveStatic(request, response) {
+  // Every route serves the same shell; the client router fetches the middle
+  // fragment from /pages/ and swaps it in without a full page reload.
   const routePages = {
     "/": "/index.html",
-    "/analytics": "/analytics.html",
-    "/uploader": "/uploader.html",
+    "/home": "/index.html",
+    "/agent": "/index.html",
+    "/uploader": "/index.html",
+    "/analytics": "/index.html",
   };
-  const requestedPath = routePages[request.url] || request.url;
-  const filePath = path.resolve(PUBLIC_DIR, `.${requestedPath.split("?")[0]}`);
+  const pathname = request.url.split("?")[0].replace(/\/+$/, "") || "/";
+  const requestedPath = routePages[pathname] || pathname;
+  const filePath = path.resolve(PUBLIC_DIR, `.${requestedPath}`);
   if (!filePath.startsWith(`${PUBLIC_DIR}${path.sep}`)) {
     sendJson(response, 404, { error: "Not found" });
     return;
@@ -172,8 +182,10 @@ function serveStatic(request, response) {
       sendJson(response, 404, { error: "Not found" });
       return;
     }
+    const ext = path.extname(filePath);
     response.writeHead(200, {
-      "Content-Type": MIME_TYPES[path.extname(filePath)] || "application/octet-stream",
+      "Content-Type": MIME_TYPES[ext] || "application/octet-stream",
+      "Cache-Control": ext === ".html" ? "no-store" : "no-cache",
     });
     response.end(content);
   });
@@ -192,6 +204,6 @@ const server = http.createServer((request, response) => {
 });
 
 server.listen(PORT, () => {
-  console.log(`Kangaroo web app: http://127.0.0.1:${PORT}`);
+  console.log(`TIC'S FRIEND web app: http://127.0.0.1:${PORT}`);
   console.log(`Loaded ${problems.length} problems from ${DATA_FILE}`);
 });

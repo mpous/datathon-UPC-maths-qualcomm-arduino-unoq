@@ -1,0 +1,34 @@
+<div class="page page-home">
+  <section class="panel hero">
+    <h2>Math copilot for Kangaroo problems</h2>
+    <p>Practice, explore and review multiple-choice problems offline, on the Arduino UNO Q.</p>
+  </section>
+
+  <div class="grid-2">
+    <section class="panel card">
+      <h2>🤖 Agent</h2>
+      <p>Explore Kangaroo problems, answer them, ask the model and inspect the prompt it receives.</p>
+      <a class="button" href="/agent">Open Agent</a>
+    </section>
+    <section class="panel card">
+      <h2>📊 Analytics</h2>
+      <p>Inspect evaluation CSV metrics: accuracy, valid answers, latency and execution errors.</p>
+      <a class="button" href="/analytics">Open Analytics</a>
+    </section>
+  </div>
+
+  <section class="panel">
+    <h2>Expected Evaluation Dataset Schema</h2>
+    <table>
+      <thead>
+        <tr><th>Column</th><th>Type</th><th>Description</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>id</td><td>string</td><td>Unique exercise identifier.</td></tr>
+        <tr><td>language / level</td><td>string / int</td><td>Exam language and difficulty tier.</td></tr>
+        <tr><td>label / answer</td><td>string (A-E)</td><td>Ground-truth and predicted option.</td></tr>
+        <tr><td>seconds / status</td><td>float / string</td><td>Inference latency and execution status.</td></tr>
+      </tbody>
+    </table>
+  </section>
+</div>

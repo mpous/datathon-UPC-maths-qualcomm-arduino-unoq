@@ -1,0 +1,61 @@
+.page-analytics .panel h2 { font-size: 18px; }
+
+.page-analytics input[type="file"] {
+  font: inherit;
+  padding: 8px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: #fff;
+  max-width: 100%;
+}
+
+.page-analytics #status { margin: 12px 0 0; }
+
+.page-analytics .metrics {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.page-analytics .metric {
+  padding: 14px;
+  background: var(--bg);
+  border-radius: 6px;
+}
+
+.page-analytics .metric b,
+.page-analytics .metric span { display: block; }
+
+.page-analytics .metric span {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.page-analytics .metric b { font-size: 22px; }
+
+.page-analytics .table-wrap { overflow-x: auto; }
+
+.page-analytics table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 14px;
+}
+
+.page-analytics th,
+.page-analytics td {
+  text-align: left;
+  padding: 8px;
+  border-bottom: 1px solid var(--line);
+}
+
+.page-analytics th {
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.page-analytics .error { color: var(--bad); }
+
+@media (max-width: 700px) {
+  .page-analytics table { font-size: 12px; }
+}
