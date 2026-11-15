@@ -17,7 +17,17 @@
   </style>
 </head>
 <body>
-  <header><div><h1>📊 Model Analytics</h1><nav class="site-nav"><a href="/">🏠 Home</a><a class="active" href="/analytics">📊 Analytics</a><a href="/uploader">🧩 Exercise Explorer</a></nav></div></header>
+  <header>
+    <div>
+      <h1>📊 Model Analytics</h1>
+      <nav class="site-nav">
+        <a href="/">🏠 Home</a>
+        <a class="active" href="/analytics">📊 Analytics</a>
+        <a href="/solver">🧩 Exercise Solver</a>
+        <a href="/uploader">📤 Image &amp; JSON Uploader</a>
+      </nav>
+    </div>
+  </header>
   <main><section><h2>1. Evaluation Dataset</h2><p>Upload an evaluation CSV or use the included sample data.</p><input id="csv" type="file" accept=".csv"><p id="status">Using sample evaluation data.</p></section>
     <section><h2>Execution Summary and Global Metrics</h2><div id="metrics" class="metrics"></div><table><thead><tr><th>ID</th><th>Language</th><th>Level</th><th>Label</th><th>Answer</th><th>Status</th></tr></thead><tbody id="rows"></tbody></table></section>
   </main>
