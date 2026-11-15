@@ -3,7 +3,9 @@ import os
 import shlex
 from pathlib import Path
 
-ROOT = Path(__file__).parent.parent.parent
+# The repository root: copilot/config.py -> copilot/ -> root. Works from any folder, on any OS.
+ROOT = Path(__file__).resolve().parent.parent
+
 
 def load(path=os.path.join(ROOT, "config.env")):
     values = {}

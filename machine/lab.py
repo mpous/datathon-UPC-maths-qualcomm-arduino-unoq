@@ -30,8 +30,8 @@ import time
 from concurrent.futures import ThreadPoolExecutor
 from paths import ROOT
 
-STARTER = os.environ.get("STARTER", "{ROOT}")
-OUT = os.environ.get("LAB_OUT", "{ROOT}/lab")
+STARTER = os.environ.get("STARTER", str(ROOT))
+OUT = os.environ.get("LAB_OUT", str(ROOT / "lab"))
 sys.path.insert(0, STARTER)
 from copilot.client import post  # noqa: E402
 from copilot.llm import SYSTEM, build_messages, format_problem  # noqa: E402
