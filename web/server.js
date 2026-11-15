@@ -5,7 +5,7 @@ const net = require("node:net");
 const { spawn } = require("node:child_process");
 
 const VALIDATION_DATA = "val.jsonl";
-const TRAIN_DATA = "val.jsonl";
+const TRAIN_DATA = "train.jsonl";
 const TEST_DATA = "";
 const SAMPLE_PROBLEMS = "sample_problems.jsonl";
 

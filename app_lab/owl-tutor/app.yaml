@@ -1,0 +1,4 @@
+name: Owl Tutor
+icon: 🦉
+description: Offline math tutor. Teach mode web page on port 8000, with the owl's eyes on the LED matrix.
+bricks: []

@@ -1,0 +1,228 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Owl Tutor</title>
+<style>
+  :root {
+    --bg: #f6f2ea; --card: #fffdf8; --ink: #2b2620; --muted: #7a6f62; --line: #e4dccd;
+    --accent: #c8702a; --accent-ink: #fff; --good: #2f7d4f; --good-bg: #e3f2e8; --bad: #b5483a; --bad-bg: #f8e4e0;
+    --hint-bg: #fdf3e2; --board: #6b4fa0;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg: #1d1a17; --card: #26221e; --ink: #f1ebe2; --muted: #a99d8f; --line: #3a342d;
+            --accent: #e08a45; --good: #6cc48f; --good-bg: #1f3328; --bad: #ec8b7d; --bad-bg: #3a2420;
+            --hint-bg: #332a1f; --board: #b49be0; }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font: 17px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; }
+  header { display: flex; align-items: center; gap: 14px; padding: 14px 20px; border-bottom: 1px solid var(--line); }
+  header h1 { font-size: 22px; margin: 0; flex: 1; }
+  .owl { width: 56px; height: 40px; border-radius: 20px 20px 14px 14px; background: #8a6a4a; display: flex;
+         justify-content: center; align-items: center; gap: 6px; flex: none; }
+  .eye { width: 18px; height: 18px; border-radius: 50%; background: #fff; position: relative; transition: height .15s; }
+  .eye::after { content: ""; position: absolute; width: 8px; height: 8px; border-radius: 50%; background: #222;
+                left: 5px; top: 5px; transition: all .2s; }
+  .owl.thinking .eye { height: 3px; margin-top: 4px; } .owl.thinking .eye::after { display: none; }
+  .owl.correct .eye { height: 9px; border-radius: 9px 9px 0 0; } .owl.correct .eye::after { display: none; }
+  .owl.wrong .eye::after { top: 8px; }
+  .owl.hint .eye::after { left: 7px; top: 3px; }
+  .lang button, .chip { border: 1px solid var(--line); background: var(--card); color: var(--ink); border-radius: 8px;
+                        padding: 6px 10px; font: inherit; font-size: 14px; cursor: pointer; }
+  .lang button.on { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+  main { display: grid; grid-template-columns: 280px 1fr; gap: 20px; padding: 20px; max-width: 1200px; margin: 0 auto; }
+  @media (max-width: 800px) { main { grid-template-columns: 1fr; padding: 16px; } }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 16px; }
+  aside h2, .card h2 { font-size: 15px; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); margin: 0 0 10px; }
+  .list { display: flex; flex-wrap: wrap; gap: 6px; max-height: 50vh; overflow: auto; }
+  .chip.on { outline: 2px solid var(--accent); }
+  textarea, input { width: 100%; font: inherit; padding: 8px; border: 1px solid var(--line); border-radius: 8px;
+                    background: var(--bg); color: var(--ink); }
+  .opts-in { display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; margin: 6px 0; }
+  .btn { background: var(--accent); color: var(--accent-ink); border: 0; border-radius: 10px; padding: 10px 16px;
+         font: inherit; font-weight: 600; cursor: pointer; }
+  .btn.ghost { background: transparent; color: var(--accent); border: 2px solid var(--accent); }
+  .btn:disabled { opacity: .45; cursor: default; }
+  .meta { color: var(--muted); font-size: 14px; margin-bottom: 8px; }
+  .problem-text { font-size: 19px; white-space: pre-wrap; }
+  .problem img { max-width: 100%; border-radius: 10px; border: 1px solid var(--line); margin: 10px 0; background: #fff; }
+  .options { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 8px; margin: 14px 0; }
+  .option { text-align: left; border: 2px solid var(--line); background: var(--bg); color: var(--ink); border-radius: 12px;
+            padding: 10px 12px; font: inherit; cursor: pointer; }
+  .option b { color: var(--accent); margin-right: 6px; }
+  .option.right { border-color: var(--good); background: var(--good-bg); }
+  .option.wrong { border-color: var(--bad); background: var(--bad-bg); }
+  .feedback { padding: 10px 14px; border-radius: 10px; margin: 10px 0; display: none; }
+  .feedback.good { display: block; background: var(--good-bg); color: var(--good); }
+  .feedback.bad { display: block; background: var(--bad-bg); color: var(--bad); }
+  .hints { display: flex; flex-direction: column; gap: 10px; margin-top: 14px; }
+  .hint { background: var(--hint-bg); border-radius: 12px; padding: 10px 14px; }
+  .hint .tag { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); }
+  .hint .tag.board { color: var(--board); }
+  .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-top: 12px; }
+  .status { color: var(--muted); font-size: 14px; }
+  .similar { display: flex; flex-direction: column; gap: 8px; margin-top: 10px; }
+  .similar button { text-align: left; }
+  .empty { color: var(--muted); padding: 30px; text-align: center; }
+</style>
+</head>
+<body>
+<header>
+  <div class="owl" id="owl"><div class="eye"></div><div class="eye"></div></div>
+  <h1 id="title">Owl Tutor</h1>
+  <div class="lang"><button data-lang="eng" class="on">EN</button> <button data-lang="cat">CA</button></div>
+</header>
+<main>
+  <aside class="card">
+    <h2 id="t-pick">Pick a problem</h2>
+    <div class="list" id="list"></div>
+    <h2 id="t-own" style="margin-top:18px">Or type your own</h2>
+    <textarea id="own-text" rows="4"></textarea>
+    <div class="opts-in" id="own-opts"></div>
+    <button class="btn ghost" id="own-go">Start</button>
+  </aside>
+  <section class="card problem" id="problem"><div class="empty" id="t-empty">Pick a problem to start.</div></section>
+</main>
+<script>
+const T = {
+  eng: {title: "Owl Tutor", pick: "Pick a problem", own: "Or type your own", start: "Start", empty: "Pick a problem to start.",
+        level: "Level", hint: ["Give me a hint", "Show me the method", "Show me the first step"], noMore: "No more hints: you can do it!",
+        thinking: "The owl is thinking about this problem…", ready: "The owl has thought about it.", right: "Yes! That's right. 🎉",
+        wrong: "Not quite. Have another look, or ask for a hint.", noKey: "This problem has no answer key, so I can't check it.",
+        similar: "Try a similar one", similarTitle: "Similar problems to practise", strategy: "Strategy", board: "Worked out by the board",
+        choose: "Your answer:", tries: "tries"},
+  cat: {title: "Mussol Tutor", pick: "Tria un problema", own: "O escriu-ne un", start: "Comença", empty: "Tria un problema per començar.",
+        level: "Nivell", hint: ["Dona'm una pista", "Ensenya'm el mètode", "Ensenya'm el primer pas"], noMore: "No hi ha més pistes: tu pots!",
+        thinking: "El mussol està pensant en aquest problema…", ready: "El mussol ja hi ha pensat.", right: "Sí! Correcte. 🎉",
+        wrong: "Encara no. Torna-ho a mirar, o demana una pista.", noKey: "Aquest problema no té solucionari, no el puc comprovar.",
+        similar: "Prova'n un de semblant", similarTitle: "Problemes semblants per practicar", strategy: "Estratègia", board: "Calculat per la placa",
+        choose: "La teva resposta:", tries: "intents"},
+};
+let lang = "eng", problems = [], current = null, hintLevel = 0, solved = false;
+const $ = (id) => document.getElementById(id);
+const t = (k) => T[lang][k];
+const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;"}[c]));
+
+function setOwl(state) {
+  $("owl").className = "owl " + state;
+  fetch("/api/eyes", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({state})}).catch(() => {});
+}
+async function post(path, body) {
+  const r = await fetch(path, {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(body)});
+  return r.json();
+}
+
+function renderStatic() {
+  document.documentElement.lang = lang === "cat" ? "ca" : "en";
+  $("title").textContent = t("title"); $("t-pick").textContent = t("pick"); $("t-own").textContent = t("own");
+  $("own-go").textContent = t("start"); if ($("t-empty")) $("t-empty").textContent = t("empty");
+  $("own-opts").innerHTML = "ABCDE".split("").map((l) => `<input id="own-${l}" placeholder="${l})">`).join("");
+  document.querySelectorAll(".lang button").forEach((b) => b.classList.toggle("on", b.dataset.lang === lang));
+  const shown = problems.filter((p) => p.language === lang && p.source !== "bank");
+  $("list").innerHTML = shown.map((p) =>
+    `<button class="chip${current && current.key === p.key ? " on" : ""}" data-key="${p.key}">${t("level")} ${p.level} · ${esc(p.id.split("_").pop())}</button>`).join("");
+  $("list").querySelectorAll("button").forEach((b) => b.onclick = () => openProblem(b.dataset.key));
+}
+
+async function openProblem(key, typed) {
+  current = typed || await (await fetch("/api/problem?key=" + encodeURIComponent(key))).json();
+  hintLevel = 0; solved = false;
+  renderProblem(); renderStatic();
+  setOwl("thinking");
+  const r = await post("/api/open", typed ? {problem: typed} : {key: current.key});
+  if (typed) current.key = r.key;
+  $("status").textContent = r.solving ? t("thinking") : t("ready");
+  setTimeout(() => { if (!solved) setOwl("idle"); }, 1500);
+}
+
+function renderProblem() {
+  const p = current, opts = p.options || {};
+  $("problem").innerHTML = `
+    <div class="meta">${p.level != null ? t("level") + " " + p.level : ""} ${p.id ? "· " + esc(p.id) : ""}</div>
+    ${p.image ? `<img src="/image/${encodeURIComponent(p.key)}" alt="${esc(p.text)}">`
+              : `<div class="problem-text">${esc(p.text)}</div>`}
+    <div class="meta" style="margin-top:12px">${t("choose")}</div>
+    <div class="options">${"ABCDE".split("").filter((l) => l in opts || !Object.keys(opts).length).map((l) =>
+      `<button class="option" data-l="${l}"><b>${l}</b>${esc(opts[l] ?? "")}</button>`).join("")}</div>
+    <div class="feedback" id="feedback"></div>
+    <div class="row"><button class="btn" id="hint-btn">${t("hint")[0]}</button>
+      <button class="btn ghost" id="similar-btn">${t("similar")}</button>
+      <span class="status" id="status"></span></div>
+    <div class="hints" id="hints"></div>
+    <div id="similar"></div>`;
+  $("problem").querySelectorAll(".option").forEach((b) => b.onclick = () => check(b));
+  $("hint-btn").onclick = nextHint;
+  $("similar-btn").onclick = showSimilar;
+}
+
+async function check(button) {
+  if (solved) return;
+  const typed = !current.key || current.key.startsWith("typed-");
+  const r = await post("/api/check", typed ? {problem: current, choice: button.dataset.l} : {key: current.key, choice: button.dataset.l});
+  const fb = $("feedback");
+  if (r.correct === null || r.correct === undefined) { fb.className = "feedback bad"; fb.textContent = t("noKey"); return; }
+  if (r.correct) {
+    solved = true; button.classList.add("right"); fb.className = "feedback good"; fb.textContent = t("right"); setOwl("correct");
+    $("similar-btn").className = "btn"; $("hint-btn").className = "btn ghost";  // next step: practise a similar one
+  } else {
+    button.classList.add("wrong"); fb.className = "feedback bad"; fb.textContent = t("wrong"); setOwl("wrong");
+    setTimeout(() => setOwl("idle"), 2500);
+  }
+}
+
+async function nextHint() {
+  if (hintLevel >= 3) { $("status").textContent = t("noMore"); return; }
+  hintLevel += 1;
+  const btn = $("hint-btn"); btn.disabled = true;
+  const box = document.createElement("div"); box.className = "hint";
+  box.innerHTML = `<div class="tag">${hintLevel} / 3</div><div class="text"></div>`;
+  $("hints").appendChild(box);
+  const res = await fetch("/api/hint", {method: "POST", headers: {"Content-Type": "application/json"},
+    body: JSON.stringify(current.key && !current.key.startsWith("typed-") ? {key: current.key, level: hintLevel}
+                         : {key: current.key, problem: current, level: hintLevel})});
+  const reader = res.body.getReader(), dec = new TextDecoder(); let buf = "", sources = new Set();
+  for (;;) {
+    const {value, done} = await reader.read(); if (done) break;
+    buf += dec.decode(value, {stream: true});
+    let i; while ((i = buf.indexOf("\n\n")) >= 0) {
+      const block = buf.slice(0, i); buf = buf.slice(i + 2);
+      const ev = (block.match(/^event: (.*)$/m) || [])[1], data = (block.match(/^data: (.*)$/m) || [])[1];
+      if (ev === "thinking") { $("status").textContent = t("thinking"); setOwl("thinking"); }
+      else if (!ev && data) {
+        const item = JSON.parse(data); sources.add(item.source);
+        box.querySelector(".text").textContent += (box.querySelector(".text").textContent ? " " : "") + item.text;
+        setOwl("hint"); $("status").textContent = "";
+      }
+    }
+  }
+  const tag = box.querySelector(".tag");
+  tag.textContent = `${hintLevel} / 3 · ${sources.has("board") ? t("board") : t("strategy")}`;
+  if (sources.has("board")) tag.classList.add("board");
+  btn.disabled = hintLevel >= 3; btn.textContent = t("hint")[Math.min(hintLevel, 2)];
+  setTimeout(() => { if (!solved) setOwl("idle"); }, 2000);
+}
+
+async function showSimilar() {
+  setOwl("thinking");
+  const hits = await post("/api/similar", current.key && !current.key.startsWith("typed-") ? {key: current.key} : {problem: current});
+  setOwl("idle");
+  $("similar").innerHTML = `<h2 style="margin-top:18px">${t("similarTitle")}</h2><div class="similar">${hits.map((h) =>
+    `<button class="option" data-key="${h.key}"><b>${t("level")} ${h.level}</b>${esc(h.text.slice(0, 140))}${h.text.length > 140 ? "…" : ""}</button>`).join("")}</div>`;
+  $("similar").querySelectorAll("button").forEach((b) => b.onclick = () => openProblem(b.dataset.key));
+}
+
+$("own-go").onclick = () => {
+  const text = $("own-text").value.trim(); if (!text) return;
+  const options = {}; "ABCDE".split("").forEach((l) => { const v = $("own-" + l).value.trim(); if (v) options[l] = v; });
+  openProblem(null, {text, options, language: lang, level: null, id: ""});
+};
+document.querySelectorAll(".lang button").forEach((b) => b.onclick = () => { lang = b.dataset.lang; renderStatic(); });
+
+(async () => {
+  problems = await (await fetch("/api/problems")).json();
+  renderStatic(); setOwl("idle");
+})();
+</script>
+</body>
+</html>
