@@ -1,0 +1,58 @@
+<div class="page page-coach">
+  <div class="page-tools">
+    <span class="pill">🦘 Cangur Coach</span>
+    <span class="pill" id="who"></span>
+    <span class="pill" id="bank"></span>
+    <label class="lang">Language
+      <select id="ui-lang" aria-label="Language"><option value="cat">Català</option><option value="eng">English</option></select>
+    </label>
+  </div>
+
+  <div class="coach-layout">
+    <div class="coach-main">
+      <section class="panel" id="start">
+        <h2 data-t="start_title"></h2>
+        <label class="field"><span data-t="name"></span><input type="text" id="name" maxlength="40" autocomplete="off"></label>
+        <label class="field"><span data-t="level"></span><select id="level"></select></label>
+        <div class="row"><button class="primary" id="go" data-t="go"></button></div>
+        <div class="verdict bad" id="start-error"></div>
+      </section>
+
+      <section class="panel hidden" id="problem">
+        <div class="meta"><span class="pill" id="p-level"></span><span class="pill" id="p-topic"></span><span class="pill" id="p-id"></span></div>
+        <div class="text" id="p-text"></div>
+        <div class="options" id="p-options"></div>
+        <div class="verdict" id="p-verdict"></div>
+      </section>
+
+      <section class="panel hidden" id="ladder">
+        <h2 data-t="ladder_title"></h2>
+        <div class="steps" id="steps"></div>
+        <div id="hints"></div>
+        <div class="ask hidden" id="ask-box">
+          <label for="question" data-t="ask_label"></label>
+          <div class="row"><input type="text" id="question" maxlength="200" autocomplete="off"><button class="secondary" id="ask" data-t="ask_btn"></button></div>
+          <div class="hint-note" id="ask-note"></div>
+        </div>
+        <div class="row"><button class="secondary" id="hint"></button><button class="primary" id="next" data-t="next"></button>
+          <span class="hint-note" data-t="keys"></span></div>
+      </section>
+    </div>
+
+    <aside class="coach-side">
+      <section class="panel hidden" id="progress">
+        <h2 data-t="progress_title"></h2>
+        <div class="hint-note" data-t="your_level"></div>
+        <div class="track" id="track"></div>
+        <table id="stats"></table>
+        <h2 class="second" data-t="topics_title"></h2>
+        <table id="topics"></table>
+        <button class="secondary small" id="leave" data-t="leave"></button>
+      </section>
+      <section class="panel">
+        <h2 data-t="how_title"></h2>
+        <div class="hint-note" data-t="how_text"></div>
+      </section>
+    </aside>
+  </div>
+</div>

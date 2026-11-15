@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Cangur face</title>
+  <style>
+    body { font: 16px/1.5 system-ui, sans-serif; max-width: 640px; margin: 40px auto; padding: 0 16px; color: #1d2433; }
+    button { font: inherit; padding: 8px 14px; margin: 4px 4px 4px 0; border: 1px solid #dfe3ea; border-radius: 6px; background: #fff; cursor: pointer; }
+    code { background: #f5f7fa; padding: 1px 5px; border-radius: 4px; }
+  </style>
+</head>
+<body>
+  <h1>🦘 Cangur face</h1>
+  <p>This app only draws on the board's LED matrix. The coach itself is on port 8000.</p>
+  <p>Test the pictures:</p>
+  <div id="buttons"></div>
+  <p id="status"></p>
+  <script>
+    const tests = [["tick", 0], ["cross", 0], ["level", 3], ["level", 7], ["hint", 1], ["hint", 2], ["letter", "C"], ["think", 0], ["face", 0]];
+    for (const [kind, value] of tests) {
+      const button = document.createElement("button");
+      button.textContent = kind + (value ? " " + value : "");
+      button.onclick = async () => {
+        const result = await (await fetch(`/led/${kind}/${value}`)).json();
+        document.querySelector("#status").textContent = JSON.stringify(result);
+      };
+      document.querySelector("#buttons").append(button);
+    }
+  </script>
+</body>
+</html>

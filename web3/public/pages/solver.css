@@ -1,0 +1,313 @@
+.page-agent .agent-layout {
+  display: grid;
+  grid-template-columns: minmax(280px, 330px) minmax(0, 1fr);
+  align-items: start;
+  gap: 18px;
+}
+
+.page-agent .agent-side,
+.page-agent .agent-main {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  min-width: 0;
+}
+
+/* The browser (filters + problem list) follows the reader down the page. */
+.page-agent .agent-side {
+  position: sticky;
+  top: calc(var(--header-h) + 18px);
+}
+
+.page-agent .page-tools {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.page-agent .pill {
+  font-size: 12px;
+  padding: 2px 10px;
+  border-radius: 999px;
+  background: var(--bg);
+  border: 1px solid var(--line);
+  color: var(--muted);
+}
+
+.page-agent .score {
+  margin-left: auto;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.page-agent .panel h2 {
+  font-size: 15px;
+  margin: 0 0 10px;
+}
+
+.page-agent .filters {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 8px;
+  padding-bottom: 12px;
+  margin-bottom: 10px;
+  border-bottom: 1px solid var(--line);
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.page-agent .filters label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  width: 100%;
+}
+
+.page-agent .filters label.check {
+  justify-content: flex-start;
+  gap: 6px;
+}
+
+.page-agent .filters .secondary {
+  width: 100%;
+  margin-top: 2px;
+}
+
+.page-agent select {
+  font: inherit;
+  padding: 4px 6px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: #fff;
+  color: var(--ink);
+}
+
+.page-agent .problem-list {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 2px;
+  max-height: min(42vh, 420px);
+  overflow-y: auto;
+}
+
+.page-agent .problem-list div {
+  padding: 6px 8px;
+  cursor: pointer;
+  font-size: 13px;
+  border-radius: 4px;
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.page-agent .problem-list div > span:first-child {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.page-agent .problem-list div:hover,
+.page-agent .problem-list div.on { background: var(--accent-soft); }
+.page-agent .problem-list div.on { font-weight: 600; }
+
+.page-agent .mark {
+  width: 34px;
+  text-align: right;
+  flex: 0 0 auto;
+}
+
+.page-agent .meta,
+.page-agent .hint {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.page-agent .problem-img {
+  max-width: 100%;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+}
+
+.page-agent .text {
+  margin: 12px 0;
+  overflow-wrap: anywhere;
+}
+
+.page-agent .ocr {
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.page-agent .ocr b { color: var(--ink); }
+
+.page-agent .letters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 8px 0;
+}
+
+.page-agent .letters button {
+  width: 56px;
+  height: 48px;
+  font-size: 20px;
+  font-weight: 700;
+  border: 2px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+  cursor: pointer;
+}
+
+.page-agent .letters button:hover:not(:disabled) { border-color: var(--accent); }
+.page-agent .letters button.right { background: #e6f4ea; border-color: var(--ok); color: var(--ok); }
+.page-agent .letters button.wrong { background: #fce8e6; border-color: var(--bad); color: var(--bad); }
+.page-agent .letters button.model { outline: 3px dashed var(--accent); outline-offset: 2px; }
+
+.page-agent .verdict {
+  font-weight: 600;
+  min-height: 1.5em;
+}
+
+.page-agent .ok { color: var(--ok); }
+.page-agent .bad { color: var(--bad); }
+
+.page-agent .row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  align-items: center;
+}
+
+.page-agent .primary,
+.page-agent .secondary {
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font: inherit;
+}
+
+.page-agent .primary {
+  border: 0;
+  background: var(--accent);
+  color: #fff;
+  font-weight: 600;
+}
+
+.page-agent .primary:disabled { opacity: .5; cursor: default; }
+.page-agent .secondary { border: 1px solid var(--line); background: #fff; }
+.page-agent .secondary:hover { border-color: var(--accent); }
+
+.page-agent table {
+  border-collapse: collapse;
+  margin-top: 10px;
+  font-size: 14px;
+}
+
+.page-agent td { padding: 3px 14px 3px 0; }
+.page-agent td:first-child { color: var(--muted); }
+
+.page-agent details { margin-top: 10px; }
+.page-agent summary { cursor: pointer; color: var(--accent); }
+
+.page-agent pre {
+  white-space: pre-wrap;
+  background: var(--bg);
+  padding: 10px;
+  border-radius: 6px;
+  max-height: 360px;
+  overflow: auto;
+}
+
+.page-agent .agent-next {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.page-agent .agent-next .primary { width: 100%; }
+
+.page-agent .agent-next .hint {
+  font-size: 12px;
+  line-height: 1.5;
+  text-align: center;
+}
+
+/* Below the sidebar breakpoint the browser sits above the problem and the
+   filters return to a single flowing row. */
+@media (max-width: 980px) {
+  .page-agent .agent-layout { grid-template-columns: 1fr; }
+  .page-agent .agent-side { position: static; }
+
+  .page-agent .filters {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px 18px;
+  }
+
+  .page-agent .filters label { width: auto; }
+  .page-agent .filters .secondary { width: auto; margin-top: 0; }
+
+  .page-agent .problem-list {
+    grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+    gap: 2px 10px;
+    max-height: 220px;
+  }
+}
+
+/* ---------- Added for the Solver: web1's model controls and result view ---------- */
+.page-agent .ctrl-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.page-agent input[type="number"] {
+  width: 76px;
+  font: inherit;
+  padding: 4px 6px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: #fff;
+  color: var(--ink);
+}
+
+.page-agent #f-model { max-width: 220px; }
+
+.page-agent .thought-box {
+  margin-top: 10px;
+  padding: 12px 14px;
+  background: var(--bg);
+  border-left: 3px solid var(--accent);
+  border-radius: 6px;
+}
+
+.page-agent .thought-title {
+  margin-bottom: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+  color: var(--accent-ink);
+}
+
+.page-agent .thought-body { font-size: 14px; line-height: 1.6; overflow-wrap: anywhere; }
+.page-agent .rich-text p { margin: 0 0 10px; color: inherit; }
+.page-agent .rich-text p:last-child { margin-bottom: 0; }
+.page-agent .rich-text ul,
+.page-agent .rich-text ol { margin: 6px 0 10px; padding-left: 22px; }
+.page-agent .rich-text code {
+  padding: 1px 5px;
+  border-radius: 4px;
+  background: rgba(22, 48, 47, .07);
+  font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+  font-size: 13px;
+}
+.page-agent .math-fallback { font-family: "Cambria Math", "Times New Roman", Georgia, serif; }
+.page-agent .math-display { display: block; text-align: center; margin: 8px 0; font-size: 16px; }
+.page-agent pre { font-size: 12.5px; }

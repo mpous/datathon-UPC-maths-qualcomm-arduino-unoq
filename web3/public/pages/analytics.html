@@ -1,0 +1,21 @@
+<div class="page page-analytics">
+  <section class="panel">
+    <h2>1. Evaluation Dataset</h2>
+    <p>Upload an evaluation CSV or use the included sample data.</p>
+    <input id="csv" type="file" accept=".csv">
+    <p id="status">Using sample evaluation data.</p>
+  </section>
+
+  <section class="panel">
+    <h2>Execution Summary and Global Metrics</h2>
+    <div id="metrics" class="metrics"></div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>ID</th><th>Language</th><th>Level</th><th>Label</th><th>Answer</th><th>Status</th></tr>
+        </thead>
+        <tbody id="rows"></tbody>
+      </table>
+    </div>
+  </section>
+</div>

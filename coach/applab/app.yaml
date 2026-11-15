@@ -1,0 +1,6 @@
+# The LED matrix of the Cangur Coach. The Teach server tells it what to draw.
+name: cangur-face
+icon: 🦘
+ports: []
+bricks:
+  - "arduino:web_ui"

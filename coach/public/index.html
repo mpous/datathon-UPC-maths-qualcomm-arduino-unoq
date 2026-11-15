@@ -1,0 +1,283 @@
+<!doctype html>
+<html lang="ca">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Cangur Coach</title>
+  <style>
+    :root { --ink:#1d2433; --muted:#5c667a; --line:#dfe3ea; --bg:#f5f7fa; --card:#fff; --ok:#1b7f3b; --bad:#b3261e; --accent:#1f5fbf; --warm:#8a5a00; --warm-bg:#fff6e0; }
+    * { box-sizing:border-box; } body { margin:0; font:16px/1.5 system-ui,sans-serif; color:var(--ink); background:var(--bg); }
+    header { padding:18px 20px; background:var(--card); border-bottom:1px solid var(--line); }
+    .header-inner { max-width:1100px; margin:auto; display:flex; flex-wrap:wrap; gap:10px; align-items:center; }
+    h1 { font-size:20px; margin:0; } h2 { font-size:15px; margin:0 0 10px; }
+    nav { display:flex; flex-wrap:wrap; gap:8px; margin-left:12px; }
+    nav a { padding:6px 12px; border:1px solid var(--line); border-radius:7px; color:var(--ink); background:#fff; text-decoration:none; font-weight:600; font-size:14px; }
+    nav a.active, nav a:hover { color:#fff; background:var(--accent); border-color:var(--accent); }
+    .pill:empty { display:none; } .pill { font-size:13px; padding:3px 10px; border-radius:999px; background:var(--bg); border:1px solid var(--line); color:var(--muted); }
+    .right { margin-left:auto; display:flex; gap:8px; align-items:center; }
+    main { display:grid; grid-template-columns:minmax(0,1fr) 300px; gap:20px; padding:20px; max-width:1100px; margin:auto; }
+    section { background:var(--card); border:1px solid var(--line); border-radius:8px; padding:18px 20px; }
+    .col { display:flex; flex-direction:column; gap:20px; min-width:0; }
+    label { font-size:14px; color:var(--muted); display:block; margin-bottom:10px; }
+    input[type=text], select { font:inherit; width:100%; padding:8px 10px; border:1px solid var(--line); border-radius:6px; background:#fff; margin-top:4px; }
+    button { font:inherit; cursor:pointer; } button:disabled { cursor:default; opacity:.5; }
+    .primary { padding:9px 18px; border:0; border-radius:6px; background:var(--accent); color:#fff; font-weight:600; }
+    .secondary { padding:9px 18px; border:1px solid var(--line); border-radius:6px; background:#fff; color:var(--ink); }
+    .meta { color:var(--muted); font-size:14px; display:flex; gap:8px; flex-wrap:wrap; }
+    .text { white-space:pre-wrap; margin:12px 0 16px; overflow-wrap:anywhere; }
+    .options { display:grid; gap:8px; }
+    .options button { display:flex; gap:12px; align-items:baseline; text-align:left; padding:10px 14px; border:2px solid var(--line); border-radius:8px; background:#fff; color:var(--ink); min-width:0; }
+    .options button b { flex:none; width:1.4em; } .options button span { overflow-wrap:anywhere; min-width:0; }
+    .options button:hover:not(:disabled) { border-color:var(--accent); }
+    .options button.right-one { background:#e6f4ea; border-color:var(--ok); color:var(--ok); opacity:1; }
+    .options button.wrong-one { background:#fce8e6; border-color:var(--bad); color:var(--bad); opacity:1; }
+    .verdict { font-weight:600; min-height:1.5em; margin-top:10px; } .ok { color:var(--ok); } .bad { color:var(--bad); }
+    .row { display:flex; flex-wrap:wrap; gap:12px; align-items:center; } .hint-note { color:var(--muted); font-size:14px; }
+    .steps { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:12px; }
+    .steps span { font-size:13px; padding:3px 10px; border-radius:999px; border:1px solid var(--line); color:var(--muted); background:var(--bg); }
+    .steps span.done { background:var(--warm-bg); border-color:#e8c877; color:var(--warm); font-weight:600; }
+    .hint { border-left:4px solid #e8c877; background:var(--warm-bg); padding:12px 14px; border-radius:0 8px 8px 0; margin-bottom:12px; }
+    .hint h3 { margin:0 0 6px; font-size:14px; color:var(--warm); } .hint .text { margin:8px 0 12px; }
+    .hint.model { border-color:var(--accent); background:#eef4ff; } .hint.model h3 { color:var(--accent); }
+    .ask { border-top:1px solid var(--line); padding-top:14px; margin:4px 0 14px; } .ask label { margin-bottom:6px; }
+    .ask .row { flex-wrap:nowrap; } .ask input { margin-top:0; min-width:0; } .ask button { flex:none; }
+    .hint.solution { border-color:var(--ok); background:#e6f4ea; } .hint.solution h3 { color:var(--ok); }
+    .track { display:grid; grid-template-columns:repeat(8,1fr); gap:4px; margin:6px 0 12px; }
+    .track div { text-align:center; padding:6px 0; border-radius:6px; background:var(--bg); border:1px solid var(--line); font-size:13px; color:var(--muted); }
+    .track div.on { background:var(--accent); border-color:var(--accent); color:#fff; font-weight:700; }
+    table { border-collapse:collapse; width:100%; font-size:14px; } td { padding:4px 0; } td:last-child { text-align:right; font-variant-numeric:tabular-nums; }
+    td.k { color:var(--muted); } .hidden { display:none; }
+    @media (max-width:820px) { main { grid-template-columns:minmax(0,1fr); padding:16px; } nav { margin-left:0; width:100%; } }
+  </style>
+</head>
+<body>
+  <header><div class="header-inner">
+    <h1>🦘 Cangur Coach</h1>
+    <nav id="nav"><a class="active" href="/">Coach</a></nav>
+    <div class="right"><span class="pill" id="who"></span>
+      <select id="ui-lang" aria-label="Language" style="width:auto;margin:0"><option value="cat">Català</option><option value="eng">English</option></select></div>
+  </div></header>
+  <main>
+    <div class="col">
+      <section id="start">
+        <h2 data-t="start_title"></h2>
+        <label><span data-t="name"></span><input type="text" id="name" maxlength="40" autocomplete="off"></label>
+        <label><span data-t="level"></span><select id="level"></select></label>
+        <div class="row"><button class="primary" id="go" data-t="go"></button><span class="hint-note" id="bank"></span></div>
+        <div class="verdict bad" id="start-error"></div>
+      </section>
+      <section id="problem" class="hidden">
+        <div class="meta"><span class="pill" id="p-level"></span><span class="pill" id="p-topic"></span><span class="pill" id="p-id"></span></div>
+        <div class="text" id="p-text"></div>
+        <div class="options" id="p-options"></div>
+        <div class="verdict" id="p-verdict"></div>
+      </section>
+      <section id="ladder" class="hidden">
+        <h2 data-t="ladder_title"></h2>
+        <div class="steps" id="steps"></div>
+        <div id="hints"></div>
+        <div class="ask hidden" id="ask-box">
+          <label for="question" data-t="ask_label"></label>
+          <div class="row"><input type="text" id="question" maxlength="200" autocomplete="off"><button class="secondary" id="ask" data-t="ask_btn"></button></div>
+          <div class="hint-note" id="ask-note"></div>
+        </div>
+        <div class="row"><button class="secondary" id="hint"></button><button class="primary" id="next" data-t="next"></button>
+          <span class="hint-note" data-t="keys"></span></div>
+      </section>
+    </div>
+    <div class="col">
+      <section id="progress" class="hidden">
+        <h2 data-t="progress_title"></h2>
+        <div class="hint-note" data-t="your_level"></div>
+        <div class="track" id="track"></div>
+        <table id="stats"></table>
+        <h2 style="margin-top:16px" data-t="topics_title"></h2>
+        <table id="topics"></table>
+      </section>
+      <section>
+        <h2 data-t="how_title"></h2>
+        <div class="hint-note" data-t="how_text"></div>
+      </section>
+    </div>
+  </main>
+  <script>
+    const T = {
+      cat: { start_title:"Comencem", name:"El teu nom", level:"Per quin nivell vols començar?", go:"Comença", ladder_title:"Escala de pistes",
+        next:"Següent problema", keys:"Tecles: A–E respon · P pista · N següent", progress_title:"El teu progrés", your_level:"El teu nivell ara",
+        topics_title:"Per temes", how_title:"Com funciona", how_text:"Si t'equivoques, no et diem la resposta. Puges una escala de pistes: primer un problema semblant més fàcil, després el mètode, i només al final la solució. Si l'encertes a la primera, el següent problema és més difícil. Tot funciona dins la placa, sense internet.",
+        grade:["5è de primària","6è de primària","1r d'ESO","2n d'ESO","3r d'ESO","4t d'ESO","1r de batxillerat","2n de batxillerat"],
+        lvl:"Nivell", hint_btn:"Demana una pista", solution_btn:"Mostra la solució", no_more:"No hi ha més pistes",
+        right:"Correcte! 🎉", right_hints:"Correcte! Ho has aconseguit amb l'ajuda de les pistes.", wrong:"Encara no. Torna-ho a provar o demana una pista.",
+        r_similar:"Problema semblant", r_method:"Mètode", r_model:"Pista del model", r_solution:"Solució",
+        h_similar:"Pista 1 · Prova primer aquest problema, que s'assembla i és més fàcil", h_method:"Pista · El mètode", h_model:"Pista · Una idea del model de la placa", h_solution:"La solució",
+        warm_right:"Molt bé! Ara torna al problema de dalt amb la mateixa idea.", warm_wrong:"No és aquesta. Prova una altra opció.",
+        solution_is:"La resposta correcta és", confirm:"Segur que vols veure la solució? El següent problema serà més fàcil.",
+        ask_label:"O pregunta al coach amb les teves paraules (la placa triga uns 20 segons)", ask_btn:"Pregunta", ask_wait:"El coach està pensant… mira la matriu de LEDs.",
+        h_ask:"El coach de la placa respon", ask_warning:"Ho ha escrit el model petit de la placa: es pot equivocar. Comprova-ho tu.",
+        h_replaced:"El mètode", ask_replaced:"La resposta del model no ha passat les nostres comprovacions (calculava o donava el resultat), així que et donem el mètode.",
+        tried:"Problemes fets", solved:"Resolts", first:"A la primera", hints:"Pistes usades", problems:"problemes", sim:"semblança", hello:"Hola" },
+      eng: { start_title:"Let's start", name:"Your name", level:"Which level do you want to start at?", go:"Start", ladder_title:"Hint ladder",
+        next:"Next problem", keys:"Keys: A–E answer · P hint · N next", progress_title:"Your progress", your_level:"Your level now",
+        topics_title:"By topic", how_title:"How it works", how_text:"If you get it wrong, we don't tell you the answer. You climb a ladder of hints: first a similar, easier problem, then the method, and only at the end the solution. If you get it right first time, the next problem is harder. Everything runs on the board, with no internet.",
+        grade:["Grade 5","Grade 6","Grade 7","Grade 8","Grade 9","Grade 10","Grade 11","Grade 12"],
+        lvl:"Level", hint_btn:"Ask for a hint", solution_btn:"Show the solution", no_more:"No more hints",
+        right:"Correct! 🎉", right_hints:"Correct! You got there with the hints.", wrong:"Not yet. Try again, or ask for a hint.",
+        r_similar:"Similar problem", r_method:"Method", r_model:"Model hint", r_solution:"Solution",
+        h_similar:"Hint 1 · First try this problem: it's similar, and easier", h_method:"Hint · The method", h_model:"Hint · An idea from the board's model", h_solution:"The solution",
+        warm_right:"Well done! Now go back to the problem above with the same idea.", warm_wrong:"Not this one. Try another option.",
+        solution_is:"The correct answer is", confirm:"Are you sure you want to see the solution? The next problem will be easier.",
+        ask_label:"Or ask the coach in your own words (the board takes about 20 seconds)", ask_btn:"Ask", ask_wait:"The coach is thinking… look at the LED matrix.",
+        h_ask:"The board's coach answers", ask_warning:"The board's small model wrote this: it can be wrong. Check it yourself.",
+        h_replaced:"The method", ask_replaced:"The model's reply didn't pass our checks (it calculated, or gave the result), so here is the method instead.",
+        tried:"Problems done", solved:"Solved", first:"First try", hints:"Hints used", problems:"problems", sim:"similarity", hello:"Hi" },
+    };
+    const $ = id => document.getElementById(id);
+    const esc = v => String(v).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+    let lang = "cat", name = "", current = null, warm = null, done = false, rungs = 0, info = null, asking = false;
+    const t = key => T[lang][key];
+
+    async function api(url, body) {
+      const response = await fetch(url, body ? {method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify(body)} : {});
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || response.statusText);
+      return data;
+    }
+    function texts() {
+      document.documentElement.lang = lang === "cat" ? "ca" : "en";
+      document.querySelectorAll("[data-t]").forEach(el => { el.textContent = t(el.dataset.t); });
+      const chosen = $("level").value || "4";
+      $("level").innerHTML = t("grade").map((g, i) => `<option value="${i}">${t("lvl")} ${i} · ${esc(g)}</option>`).join("");
+      $("level").value = chosen;
+      if (info) $("bank").textContent = `${info.problems} ${t("problems")} · M3Kang`;
+      if (name) $("who").textContent = `${t("hello")}, ${name}`;
+      hintButton();
+    }
+    function optionButtons(box, problem, onPick) {
+      box.innerHTML = "ABCDE".split("").map(l => `<button data-l="${l}"><b>${l})</b><span>${esc(problem.options[l])}</span></button>`).join("");
+      box.onclick = e => { const b = e.target.closest("button"); if (b && !b.disabled) onPick(b.dataset.l); };
+    }
+    function mark(box, letter, correct) {
+      box.querySelectorAll("button").forEach(b => {
+        if (b.dataset.l === letter) { b.classList.add(correct ? "right-one" : "wrong-one"); b.disabled = true; }
+        if (correct) b.disabled = true;
+      });
+    }
+    function show(problem, level) {
+      current = problem; warm = null; done = false; rungs = 0;
+      $("start").classList.add("hidden"); ["problem","ladder","progress"].forEach(id => $(id).classList.remove("hidden"));
+      $("p-level").textContent = `${t("lvl")} ${problem.level} · ${t("grade")[problem.level]}`;
+      $("p-topic").textContent = problem.topic_name; $("p-id").textContent = problem.id;
+      $("p-text").textContent = problem.text; $("p-verdict").textContent = ""; $("p-verdict").className = "verdict";
+      optionButtons($("p-options"), problem, answer);
+      $("hints").innerHTML = ""; $("question").value = ""; $("ask-note").textContent = "";
+      $("ask-box").classList.toggle("hidden", !(info && info.coach)); steps(); hintButton(); progress();
+      window.scrollTo({top:0});
+    }
+    function steps() {
+      $("steps").innerHTML = current.ladder.map((r, i) => `<span class="${i < rungs ? "done" : ""}">${i + 1}. ${esc(t("r_" + r))}</span>`).join("");
+    }
+    function hintButton() {
+      if (!current) return;
+      const left = current.ladder.length - rungs, button = $("hint");
+      button.disabled = done || left <= 0;
+      button.textContent = left <= 0 ? t("no_more") : left === 1 ? t("solution_btn") : t("hint_btn");
+      $("ask").disabled = done || asking; $("question").disabled = done || asking;
+    }
+    async function ask() {
+      const question = $("question").value.trim();
+      if (!current || done || asking || question.length < 3) { $("question").focus(); return; }
+      asking = true; hintButton(); $("ask-note").textContent = t("ask_wait");
+      try {
+        const r = await api("/api/ask", {name, id: current.id, question});
+        const box = document.createElement("div"); box.className = "hint" + (r.replaced ? "" : " model");
+        box.innerHTML = `<h3></h3><div class="hint-note"></div><div class="q"></div><div class="a"></div>`;
+        box.querySelector("h3").textContent = r.replaced ? `${t("h_replaced")} · ${r.topic}` : `${t("h_ask")} (${r.seconds} s)`;
+        box.querySelector(".hint-note").textContent = r.replaced ? t("ask_replaced") : t("ask_warning");
+        box.querySelector(".q").textContent = "« " + question + " »"; box.querySelector(".q").style.cssText = "margin:8px 0 4px;color:var(--muted)";
+        box.querySelector(".a").textContent = r.text;
+        $("hints").append(box); $("question").value = ""; $("ask-note").textContent = "";
+        box.scrollIntoView({behavior:"smooth", block:"nearest"});
+      } catch (error) { $("ask-note").textContent = error.message; }
+      asking = false; hintButton(); progress();
+    }
+    async function answer(letter) {
+      if (done) return;
+      const r = await api("/api/answer", {name, id: current.id, choice: letter});
+      mark($("p-options"), letter, r.correct);
+      if (r.correct) {
+        done = true;
+        $("p-verdict").textContent = rungs || r.wrong.length ? t("right_hints") : t("right"); $("p-verdict").className = "verdict ok";
+      } else { $("p-verdict").textContent = t("wrong"); $("p-verdict").className = "verdict bad"; }
+      hintButton(); progress();
+    }
+    async function warmAnswer(letter) {
+      if (!warm || warm.done) return;
+      const r = await api("/api/answer", {name, id: warm.problem.id, choice: letter});
+      mark(warm.box, letter, r.correct); warm.done = r.correct;
+      warm.verdict.textContent = r.correct ? t("warm_right") : t("warm_wrong"); warm.verdict.className = "verdict " + (r.correct ? "ok" : "bad");
+    }
+    async function hint() {
+      if (!current || done || rungs >= current.ladder.length) return;
+      if (current.ladder.length - rungs === 1 && !confirm(t("confirm"))) return;
+      const h = await api("/api/hint", {name, id: current.id});
+      rungs = current.ladder.indexOf(h.type) + 1;
+      const box = document.createElement("div"); box.className = "hint" + (h.type === "solution" ? " solution" : "");
+      if (h.type === "similar") {
+        box.innerHTML = `<h3>${esc(t("h_similar"))}</h3><div class="meta"><span class="pill">${esc(t("lvl"))} ${h.problem.level}</span><span class="pill">${esc(h.problem.topic_name)}</span><span class="pill">${esc(t("sim"))} ${Math.round(h.similarity * 100)}%</span></div><div class="text"></div><div class="options"></div><div class="verdict"></div>`;
+        box.querySelector(".text").textContent = h.problem.text;
+        warm = {problem: h.problem, box: box.querySelector(".options"), verdict: box.querySelector(".verdict"), done: false};
+        optionButtons(warm.box, h.problem, warmAnswer);
+      } else if (h.type === "solution") {
+        done = true; warm = null;
+        box.innerHTML = `<h3>${esc(t("h_solution"))}</h3><div>${esc(t("solution_is"))} <b>${esc(h.label)}) ${esc(h.value)}</b></div>`;
+        $("p-options").querySelectorAll("button").forEach(b => { b.disabled = true; if (b.dataset.l === h.label) b.classList.add("right-one"); });
+      } else {
+        box.innerHTML = `<h3>${esc(t("h_" + h.type))}${h.topic ? " · " + esc(h.topic) : ""}</h3><div></div>`;
+        box.lastChild.textContent = h.text;
+      }
+      $("hints").append(box); steps(); hintButton(); progress();
+      box.scrollIntoView({behavior:"smooth", block:"nearest"});
+    }
+    async function next() {
+      if (!current) return;
+      const r = await api("/api/next", {name});
+      show(r.problem, r.level);
+    }
+    async function progress() {
+      const p = await api("/api/progress?name=" + encodeURIComponent(name));
+      $("track").innerHTML = [0,1,2,3,4,5,6,7].map(l => `<div class="${l === p.level ? "on" : ""}">${l}</div>`).join("");
+      $("stats").innerHTML = [["tried", p.tried], ["solved", p.solved], ["first", p.first_try], ["hints", p.hints]]
+        .map(([k, v]) => `<tr><td class="k">${esc(t(k))}</td><td>${v}</td></tr>`).join("");
+      $("topics").innerHTML = p.topics.map(x => `<tr><td class="k">${esc(x.topic)}</td><td>${x.solved}/${x.tried}</td></tr>`).join("");
+    }
+    async function start() {
+      name = $("name").value.trim(); $("start-error").textContent = "";
+      if (!name) { $("name").focus(); return; }
+      try {
+        const r = await api("/api/start", {name, language: lang, level: Number($("level").value)});
+        $("who").textContent = `${t("hello")}, ${name}`; $("ui-lang").disabled = true;
+        show(r.problem, r.level);
+      } catch (error) { $("start-error").textContent = error.message; }
+    }
+    $("go").onclick = start; $("hint").onclick = () => hint().catch(alertError); $("next").onclick = () => next().catch(alertError);
+    $("name").addEventListener("keydown", e => { if (e.key === "Enter") start(); });
+    $("ask").onclick = ask; $("question").addEventListener("keydown", e => { if (e.key === "Enter") ask(); });
+    $("ui-lang").onchange = e => { lang = e.target.value; texts(); };
+    function alertError(error) { $("p-verdict").textContent = error.message; $("p-verdict").className = "verdict bad"; }
+    document.addEventListener("keydown", e => {
+      if (["INPUT","SELECT"].includes(e.target.tagName) || e.ctrlKey || e.metaKey || e.altKey || !current) return;
+      const k = e.key.toUpperCase();
+      if ("ABCDE".includes(k) && k.length === 1) (warm && !warm.done ? warmAnswer(k) : answer(k)).catch(alertError);
+      else if (k === "P" || k === "H") hint().catch(alertError);
+      else if (k === "N") next().catch(alertError);
+    });
+    api("/api/info").then(i => {
+      info = i;
+      const labels = {"/home": "Home", "/analytics": "Analytics"};
+      i.extra_pages.forEach(p => $("nav").insertAdjacentHTML("beforeend", `<a href="${p}">${labels[p]}</a>`));
+      texts();
+    }).catch(() => texts());
+    texts();
+  </script>
+</body>
+</html>

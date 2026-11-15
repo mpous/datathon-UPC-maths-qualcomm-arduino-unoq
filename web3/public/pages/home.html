@@ -1,0 +1,44 @@
+<div class="page page-home">
+  <section class="panel hero">
+    <h2>Math copilot for Kangaroo problems</h2>
+    <p>Practise with a coach that never gives the answer away, watch the board's model solve a problem, or bring your own. Everything runs on the Arduino UNO Q, offline.</p>
+  </section>
+
+  <div class="grid-2">
+    <section class="panel card">
+      <h2>🦘 Coach</h2>
+      <p>For students. Answer Kangaroo problems at your level. When you get one wrong, climb a ladder of hints: a similar, easier problem first, then the method, and the solution only at the end.</p>
+      <a class="button" href="/coach">Start practising</a>
+    </section>
+    <section class="panel card">
+      <h2>🤖 Agent</h2>
+      <p>Explore the Kangaroo problems, answer them, and ask the board's model. See what it read, what it wrote and how long it took.</p>
+      <a class="button" href="/agent">Open Agent</a>
+    </section>
+    <section class="panel card">
+      <h2>📤 Uploader</h2>
+      <p>Bring your own problem: upload a picture or paste its text, turn it into structured JSON, and ask the model to solve it.</p>
+      <a class="button" href="/uploader">Open Uploader</a>
+    </section>
+    <section class="panel card">
+      <h2>📊 Analytics</h2>
+      <p>Inspect evaluation CSV metrics: accuracy, valid answers, latency and execution errors.</p>
+      <a class="button" href="/analytics">Open Analytics</a>
+    </section>
+  </div>
+
+  <section class="panel">
+    <h2>What runs where</h2>
+    <table>
+      <thead>
+        <tr><th>Section</th><th>What the board does</th><th>Waits for the model?</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Coach: answers, hint ladder, next problem</td><td>Lookups in the M3Kang bank, and rules</td><td>No: milliseconds</td></tr>
+        <tr><td>Coach: "ask the coach"</td><td>Qwen3.5 0.8B with a coach's system prompt, checked in code</td><td>Yes: about 20 seconds</td></tr>
+        <tr><td>Agent and Uploader: "ask the model"</td><td>Qwen3.5 0.8B, through <code>machine/predict_one.py</code></td><td>Yes</td></tr>
+        <tr><td>Analytics</td><td>Nothing: your browser reads the CSV</td><td>No</td></tr>
+      </tbody>
+    </table>
+  </section>
+</div>

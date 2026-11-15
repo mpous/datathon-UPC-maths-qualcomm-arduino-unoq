@@ -1,0 +1,117 @@
+<div class="page page-uploader">
+  <div class="page-tools">
+    <span class="pill" id="s-model">loading...</span>
+    <span class="pill" id="s-data"></span>
+    <span class="pill" id="s-ocr"></span>
+  </div>
+
+  <div class="uploader-layout">
+    <!-- Left: a picture -> OCR -> the model's answer -->
+    <div class="col">
+      <section class="panel">
+        <h2>1. Upload a Kangaroo problem</h2>
+        <p class="sub">Choose, drag and drop, or paste (<code>Ctrl+V</code>) a picture of a problem. OCR reads the text and the options, and the model answers.</p>
+
+        <div id="dropzone" class="dropzone" tabindex="0" role="button" aria-label="Choose a picture">
+          <div><b>Click to choose a picture</b>, drop it here, or paste it</div>
+          <div class="hint">PNG, JPG or WEBP (a name like <code>lvl-0_2026_1_eng.png</code> sets the level, year and language)</div>
+          <input id="file-input" type="file" accept="image/*" hidden>
+        </div>
+
+        <div id="preview-wrap" hidden>
+          <img id="preview-img" alt="The uploaded problem">
+          <div id="preview-meta" class="hint"></div>
+        </div>
+
+        <div class="controls">
+          <label class="ctrl-label">Model <select id="f-model"></select></label>
+          <label class="ctrl-label">Variant
+            <select id="f-variant">
+              <option value="cot" selected>cot</option>
+              <option value="letter">letter</option>
+              <option value="pot">pot</option>
+              <option value="official">official</option>
+            </select>
+          </label>
+          <label class="ctrl-label">Num tokens
+            <input id="f-max-tokens" type="number" value="150" min="1" max="2048">
+          </label>
+          <label class="ctrl-label">Language
+            <select id="f-lang">
+              <option value="auto" selected>auto</option>
+              <option value="cat">cat</option>
+              <option value="eng">eng</option>
+              <option value="esp">esp</option>
+              <option value="fra">fra</option>
+              <option value="deu">deu</option>
+            </select>
+          </label>
+        </div>
+
+        <div class="controls">
+          <button id="btn-solve-img" class="primary" disabled>Solve the picture</button>
+          <button id="btn-ocr-only" class="secondary" disabled>Only read it (OCR)</button>
+          <span id="img-status" class="hint"></span>
+        </div>
+      </section>
+
+      <section class="panel" id="resolution-card" hidden>
+        <h2>The model's answer</h2>
+        <div id="resolution-body"></div>
+      </section>
+    </div>
+
+    <!-- Right: pasted text -> structured JSON -> the model's answer -->
+    <div class="col">
+      <section class="panel">
+        <h2>2. Or paste the text</h2>
+        <p class="sub">Paste the statement and the options A–E. It becomes a problem in the M3Kang format.</p>
+
+        <div class="meta-grid">
+          <label>Problem ID <input id="m-id" type="text" placeholder="auto (lvl-0_2026_1)"></label>
+          <label>Language
+            <select id="m-lang">
+              <option value="auto" selected>auto</option>
+              <option value="cat">cat</option>
+              <option value="eng">eng</option>
+              <option value="esp">esp</option>
+              <option value="fra">fra</option>
+              <option value="deu">deu</option>
+            </select>
+          </label>
+          <label>Level <input id="m-level" type="number" value="0" min="0" max="12"></label>
+          <label>Correct answer
+            <select id="m-label">
+              <option value="" selected>(unknown)</option>
+              <option>A</option><option>B</option><option>C</option><option>D</option><option>E</option>
+            </select>
+          </label>
+        </div>
+
+        <textarea id="raw-text" rows="7" aria-label="The problem's text" placeholder="1. A baker fills 4 trays with 6 buns each and sells 9 of them. How many buns are left?&#10;A) 13   B) 15   C) 17   D) 19   E) 24"></textarea>
+
+        <div class="controls">
+          <button id="btn-struct-fast" class="primary">Structure it (instant)</button>
+          <button id="btn-struct-ai" class="secondary">Structure it with the model</button>
+          <span id="struct-status" class="hint"></span>
+        </div>
+      </section>
+
+      <section class="panel">
+        <h2>3. The structured problem</h2>
+        <p class="sub">From the picture or from the text above. You can edit it before you solve or save it.</p>
+
+        <textarea id="json-out" class="mono" rows="14" aria-label="The problem as JSON" placeholder='{&#10;  "id": "lvl-0_2026_1",&#10;  "language": "cat",&#10;  "level": 0,&#10;  "year": 2026,&#10;  "text_only": true,&#10;  "text": "...",&#10;  "options": { "A": "...", "B": "...", "C": "...", "D": "...", "E": "..." },&#10;  "label": ""&#10;}'></textarea>
+
+        <div class="controls">
+          <button id="btn-solve-json" class="primary">Solve it</button>
+          <button id="btn-copy-json" class="secondary">Copy JSON</button>
+          <button id="btn-copy-jsonl" class="secondary">Copy JSONL</button>
+          <button id="btn-download-json" class="secondary">Download .json</button>
+          <button id="btn-save" class="secondary">Save to the Agent's list</button>
+        </div>
+        <div id="json-status" class="hint status-line"></div>
+      </section>
+    </div>
+  </div>
+</div>

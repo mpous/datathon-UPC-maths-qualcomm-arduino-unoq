@@ -1,0 +1,67 @@
+<div class="page page-agent">
+  <div class="page-tools">
+    <span class="pill" id="s-mode">model</span>
+    <span class="pill" id="s-data"></span>
+    <span class="score" id="score">You 0/0 · Model 0/0</span>
+  </div>
+
+  <div class="agent-layout">
+    <aside class="agent-side">
+      <section class="panel">
+        <div class="filters">
+          <label>Language <select id="f-lang"><option value="">all</option></select></label>
+          <label>Level <select id="f-level"><option value="">all</option></select></label>
+          <label class="check"><input type="checkbox" id="f-options"> Only problems with options</label>
+          <button class="secondary" id="random">Random problem</button>
+        </div>
+        <div id="list" class="problem-list"></div>
+      </section>
+
+      <section class="panel agent-next">
+        <button class="primary" id="next">Next problem</button>
+        <span class="hint">Keys: A-E answer · M ask · N next · R random</span>
+      </section>
+    </aside>
+
+    <div class="agent-main">
+      <section class="panel">
+        <div class="meta" id="meta">Loading...</div>
+        <img id="img" class="problem-img" alt="Problem illustration">
+        <div class="text rich-text" id="text"></div>
+        <div class="ocr" id="ocr"></div>
+      </section>
+
+      <section class="panel">
+        <h2>1. Your answer</h2>
+        <div class="letters" id="mine"></div>
+        <div id="my-verdict" class="verdict"></div>
+      </section>
+
+      <section class="panel">
+        <h2>2. Ask the model</h2>
+        <div class="row">
+          <button class="primary" id="ask">Ask the model</button>
+          <label class="ctrl-label">Model <select id="f-model"></select></label>
+          <label class="ctrl-label">Variant
+            <select id="f-variant">
+              <option value="cot" selected>cot</option>
+              <option value="letter">letter</option>
+              <option value="pot">pot</option>
+              <option value="official">official</option>
+            </select>
+          </label>
+          <label class="ctrl-label">Num tokens
+            <input id="f-max-tokens" type="number" value="120" min="1" max="2048">
+          </label>
+          <span id="model-hint" class="hint"></span>
+        </div>
+        <div id="model"></div>
+      </section>
+
+      <section class="panel">
+        <h2>3. Practise it with hints</h2>
+        <div class="hint">The Agent shows the answer. To work on problems like this one without seeing it, with a ladder of hints, open the <a href="/coach">Coach</a>.</div>
+      </section>
+    </div>
+  </div>
+</div>
